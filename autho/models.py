@@ -14,10 +14,5 @@ class User(BaseUser, BaseModelMixin):
     fathers_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
-    # groups = models.ManyToManyField("auth.Group", related_name="ccib_user_groups")
-    # permissions = models.ManyToManyField(
-    #     "auth.Permission", related_name="custom_user_permissions"
-    # )
-
     def __str__(self):
         return self.name
