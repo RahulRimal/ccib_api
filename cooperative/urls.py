@@ -6,4 +6,14 @@ from rest_framework_nested.routers import DefaultRouter, NestedDefaultRouter
 
 router = DefaultRouter()
 
-urlpatterns = router.urls
+router.register('loans', views.LoanViewSet, basename='loans')
+router.register('companys', views.CompanyViewSet, basename='companys')
+# router.register('personalguarantors', views.PersonalGuarantorViewSet, basename='personalguarantors')
+router.register('loanapplications', views.LoanApplicationViewSet, basename='loanapplications')
+
+loan_router = NestedDefaultRouter(router, 'loans', lookup='loan')
+
+loan_router.register('guarantors', views.PersonalGuarantorViewSet, basename='loan-guarantors')
+
+
+urlpatterns = router.urls + loan_router.urls

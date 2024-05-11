@@ -7,6 +7,9 @@ from common.models import BaseModelMixin
 # PersonalGuarantor model
 class PersonalGuarantor(BaseModelMixin):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+    loan = models.ForeignKey(
+        "Loan", on_delete=models.CASCADE, related_name="personal_guarantors"
+    )
 
 
 # Loan model
@@ -33,7 +36,9 @@ class Loan(BaseModelMixin):
     ]
 
     name = models.CharField(max_length=100)
-    nature = models.CharField(max_length=25, choices=NATURE_CHOICES, default=NATURE_TERM)
+    nature = models.CharField(
+        max_length=25, choices=NATURE_CHOICES, default=NATURE_TERM
+    )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     maturity_date = models.DateField()
     installment_due_type = models.CharField(
@@ -42,19 +47,14 @@ class Loan(BaseModelMixin):
     emi_amount = models.DecimalField(max_digits=10, decimal_places=2)
     currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
     total_due = models.DecimalField(max_digits=12, decimal_places=2)
-    personal_guarantors = models.ManyToManyField(
-        PersonalGuarantor, related_name="guaranted_loans", blank=True
-    )
+    # personal_guarantors = models.ManyToManyField(
+    #     PersonalGuarantor, related_name="guaranted_loans", blank=True
+    # )
 
 
-LONE_TAKER_PERSON = "personal"
-LONE_TAKER_COMPANY = "company"
-
-# Choices for lone taker type
-LONE_TAKER_TYPE_CHOICES = [
-    (LONE_TAKER_PERSON, "Person"),
-    (LONE_TAKER_COMPANY, "Company"),
-]
+class LoanApplication(BaseModelMixin):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
 
 class Company(BaseModelMixin):
@@ -74,10 +74,6 @@ class Company(BaseModelMixin):
     permanent_add = models.CharField(max_length=255)
     pan_registration_date = models.DateField(blank=True, null=True)
     pan_registration_place = models.CharField(max_length=100, blank=True, null=True)
-    share_holders = models.ManyToManyField(User, related_name="companies", blank=True)
-    if_profiter_then_no_shareholders = models.CharField(
-        max_length=100, blank=True, null=True
-    )
     profiter = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     lone_taker_type = models.CharField(
         max_length=10, choices=LONE_TAKER_TYPE_CHOICES, default=LONE_TAKER_COMPANY
@@ -85,3 +81,10 @@ class Company(BaseModelMixin):
 
     def __str__(self):
         return self.name
+
+
+class Shareholder(BaseModelMixin):
+    company = models.ForeignKey(
+        Company, on_delete=models.CASCADE, related_name="share_holders"
+    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
