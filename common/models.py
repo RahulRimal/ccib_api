@@ -1,12 +1,14 @@
 from django.db import models
 
+from shortuuidfield import ShortUUIDField
 
-# Create your models here.
+
 class BaseModelMixin(models.Model):
-    idx = models.UUIDField(max_length=22)
-    created_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-    is_obsolete = models.BooleanField(default=True, db_index=True)
+    idx = ShortUUIDField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    is_obsolete = models.BooleanField(default=False, db_index=True)
 
     class Meta:
         abstract = True
+
