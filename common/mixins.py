@@ -2,10 +2,7 @@ from shortuuidfield import ShortUUIDField
 
 from rest_framework import serializers
 
-
 class BaseModelSerializerMixin(serializers.ModelSerializer):
-    # idx = serializers.CharField(read_only=True)
-    idx = serializers.ReadOnlyField()
     idx = ShortUUIDField()
 
     class Meta:
@@ -37,7 +34,6 @@ class BaseModelSerializerMixin(serializers.ModelSerializer):
 
 class BaseApiMixin():
     lookup_field = "idx"
-
 
     class Meta:
         abstract = True

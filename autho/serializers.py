@@ -24,7 +24,6 @@ class UserSerializer(BaseModelSerializerMixin):
         ]
 
     def create(self, validated_data):
-
         username = generate_username(validated_data["first_name"], validated_data["last_name"]) 
         validated_data["username"] = username
         return super().create(validated_data)

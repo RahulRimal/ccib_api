@@ -1,7 +1,4 @@
-
-
 from autho.models import User
-
 
 def generate_username(first_name: str, last_name: str) -> str:
     """ Generate a unique username """

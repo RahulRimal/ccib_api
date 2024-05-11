@@ -47,10 +47,6 @@ class Loan(BaseModelMixin):
     emi_amount = models.DecimalField(max_digits=10, decimal_places=2)
     currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
     total_due = models.DecimalField(max_digits=12, decimal_places=2)
-    # personal_guarantors = models.ManyToManyField(
-    #     PersonalGuarantor, related_name="guaranted_loans", blank=True
-    # )
-
 
 class LoanApplication(BaseModelMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
