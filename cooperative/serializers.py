@@ -115,7 +115,6 @@ class UpdateLoanSerializer(BaseModelSerializerMixin):
 
 
 class LoanApplicationSerializer(BaseModelSerializerMixin):
-    # user = serializers.ReadOnlyField()
     user = UserSerializer()
     first_name = serializers.CharField(write_only=True)
     middle_name = serializers.CharField(write_only=True)
