@@ -13,16 +13,13 @@ from cooperative.serializers import (
     PersonalGuarantorSerializer,
     UpdateCompanySerializer,
     UpdateLoanApplicationSerializer,
-    UpdateLoanSerializer,
-    UpdatePersonalGuarantorSerializer,
+    UpdateLoanSerializer
 )
 
 
-# Create your views here.
 class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = PersonalGuarantor.objects.all()
-    # serializer_class = PersonalGuarantorSerializer
 
     def get_queryset(self):
         return PersonalGuarantor.objects.filter(loan__idx=self.kwargs["loan_idx"])
@@ -36,14 +33,11 @@ class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
     
     def get_serializer_context(self):
         return {"loan_idx": self.kwargs["loan_idx"]}
-    
 
 
 class LoanViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
-
     queryset = Loan.objects.all()
-    # serializer_class = LoanSerializer
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -55,9 +49,7 @@ class LoanViewSet(BaseApiMixin, ModelViewSet):
 
 class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
-
     queryset = LoanApplication.objects.all()
-    # serializer_class = LoanApplicationSerializer
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -70,7 +62,6 @@ class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
 class CompanyViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Company.objects.all()
-    # serializer_class = CompanySerializer
 
     def get_serializer_class(self):
         if self.request.method == "POST":
