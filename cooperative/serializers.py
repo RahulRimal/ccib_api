@@ -4,7 +4,7 @@ from autho.models import User
 from autho.serializers import UserSerializer
 from common.helpers import generate_username
 from common.mixins import BaseModelSerializerMixin
-from cooperative.models import Company, Loan, LoanApplication, PersonalGuarantor
+from cooperative.models import Company, Finance, Loan, LoanApplication, PersonalGuarantor
 
 
 class PersonalGuarantorSerializer(BaseModelSerializerMixin):
@@ -164,6 +164,7 @@ class LoanApplicationSerializer(BaseModelSerializerMixin):
 
 
 class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
     first_name = serializers.CharField(write_only=True)
     middle_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
@@ -177,6 +178,7 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
         model = LoanApplication
         fields = [
             "idx",
+            "user",
             "first_name",
             "middle_name",
             "last_name",
@@ -211,6 +213,7 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
 
 
 class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
     first_name = serializers.CharField(write_only=True)
     middle_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
@@ -224,6 +227,7 @@ class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
         model = LoanApplication
         fields = [
             "idx",
+            "user",
             "first_name",
             "middle_name",
             "last_name",
@@ -304,3 +308,19 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
             "profiter",
             "lone_taker_type",
         ]
+
+
+class FinaceSerializer(BaseModelSerializerMixin):
+    class Meta:
+        model = Finance
+        fields = ["idx", "name", "description", "location"]
+
+class CreateFinanceSerializer(BaseModelSerializerMixin):
+    class Meta:
+        model = Finance
+        fields = ["idx", "name", "description", "location"] 
+
+class UpdateFinanceSerializer(BaseModelSerializerMixin):
+    class Meta:
+        model = Finance
+        fields = ["idx", "name", "description", "location"]

@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-pnn#yozemsti20h&2&qg4wjey%r-m$cyzloc2ds@)+$w(a*vq2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "192.168.1.73",
+    "localhost",
+
+]
 
 
 # Application definition
@@ -38,10 +42,12 @@ DJANGO_APPS = [
     "django.contrib.staticfiles",
 ]
 
-NATIVE_APPS = ["autho", "cooperative", "common"]
+NATIVE_APPS = ["autho", "cooperative", "common", "subscription"]
 
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "subscriptions",
+    "corsheaders",
     "djoser",
     "django_filters",
 ]
@@ -50,6 +56,7 @@ INSTALLED_APPS = DJANGO_APPS + NATIVE_APPS + THIRD_PARTY_APPS
 
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -140,3 +147,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {
     "COERCE_DECIMAL_TO_STRING": False,
 }
+
+CORS_ALLOW_ALL_ORIGINS: bool = True
+

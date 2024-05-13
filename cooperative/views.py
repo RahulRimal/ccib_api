@@ -1,17 +1,20 @@
 from rest_framework.viewsets import ModelViewSet
 
 from common.mixins import BaseApiMixin
-from cooperative.models import Company, Loan, LoanApplication, PersonalGuarantor
+from cooperative.models import Company, Finance, Loan, LoanApplication, PersonalGuarantor
 from cooperative.serializers import (
     CompanySerializer,
     CreateCompanySerializer,
+    CreateFinanceSerializer,
     CreateLoanApplicationSerializer,
     CreateLoanSerializer,
     CreatePersonalGuarantorSerializer,
+    FinaceSerializer,
     LoanApplicationSerializer,
     LoanSerializer,
     PersonalGuarantorSerializer,
     UpdateCompanySerializer,
+    UpdateFinanceSerializer,
     UpdateLoanApplicationSerializer,
     UpdateLoanSerializer
 )
@@ -27,8 +30,6 @@ class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CreatePersonalGuarantorSerializer
-        if self.request.method == "PATCH":
-            return UpdatePersonalGuarantorSerializer
         return PersonalGuarantorSerializer
     
     def get_serializer_context(self):
@@ -69,3 +70,16 @@ class CompanyViewSet(BaseApiMixin, ModelViewSet):
         if self.request.method == "PATCH":
             return UpdateCompanySerializer
         return CompanySerializer
+
+
+class FinaceViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Finance.objects.all()
+    # serializer_class = FinaceSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateFinanceSerializer
+        if self.request.method == "PATCH":
+            return UpdateFinanceSerializer
+        return FinaceSerializer
