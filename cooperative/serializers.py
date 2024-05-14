@@ -4,7 +4,13 @@ from autho.models import User
 from autho.serializers import UserSerializer
 from common.helpers import generate_username
 from common.mixins import BaseModelSerializerMixin
-from cooperative.models import Company, Finance, Loan, LoanApplication, PersonalGuarantor
+from cooperative.models import (
+    Company,
+    Finance,
+    Loan,
+    LoanApplication,
+    PersonalGuarantor,
+)
 
 
 class PersonalGuarantorSerializer(BaseModelSerializerMixin):
@@ -21,11 +27,7 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
 
     class Meta:
         model = PersonalGuarantor
-        fields = [
-           "idx",
-           "user_idx",
-           "user"
-        ]
+        fields = ["idx", "user_idx", "user"]
 
     def create(self, validated_data):
         loan_idx = self.context["loan_idx"]
@@ -37,7 +39,7 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
         try:
             loan = Loan.objects.get(idx=loan_idx)
         except Loan.DoesNotExist:
-            raise serializers.ValidationError("Loan does not exist")   
+            raise serializers.ValidationError("Loan does not exist")
         validated_data["loan"] = loan
         return super().create(validated_data)
 
@@ -62,7 +64,6 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
 
         #     )
         #     return PersonalGuarantor
-
 
 
 class LoanSerializer(BaseModelSerializerMixin):
@@ -311,16 +312,6 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
 
 
 class FinaceSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Finance
-        fields = ["idx", "name", "description", "location"]
-
-class CreateFinanceSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Finance
-        fields = ["idx", "name", "description", "location"] 
-
-class UpdateFinanceSerializer(BaseModelSerializerMixin):
     class Meta:
         model = Finance
         fields = ["idx", "name", "description", "location"]

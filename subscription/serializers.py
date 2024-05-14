@@ -1,17 +1,8 @@
 from common.mixins import BaseModelSerializerMixin
 from subscription.models import Plan, PlanCost, Subscription
 
+
 class PlanSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Plan
-        fields = ["idx", "name", "description", "period"]
-
-class CreatePlanSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Plan
-        fields = ["idx", "name", "description", "period"]
-
-class UpdatePlanSerializer(BaseModelSerializerMixin):
     class Meta:
         model = Plan
         fields = ["idx", "name", "description", "period"]
@@ -22,17 +13,6 @@ class PlanCostSerializer(BaseModelSerializerMixin):
         model = PlanCost
         fields = ["idx", "plan", "cost", "recurrance"]
 
-
-class CreatePlanCostSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = PlanCost
-        fields = ["idx", "plan", "cost", "recurrance"]
-    
-
-class UpdatePlanCostSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = PlanCost
-        fields = ["idx", "plan", "cost", "recurrance"]
 
 class SubscriptionSerializer(BaseModelSerializerMixin):
     class Meta:
