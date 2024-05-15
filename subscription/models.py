@@ -1,10 +1,9 @@
 from django.db import models
 from common.models import BaseModelMixin
-from django_flex_subscriptions.models import SubscriptionBase, PlanBase
 from cooperative.models import Finance
 
 
-class Plan(BaseModelMixin, PlanBase):
+class Plan(BaseModelMixin):
     PERIOD_MONTHLY = "monthly"
     PERIOD_YEARLY = "yearly"
     PERIOD_ONCE = "once"
@@ -24,11 +23,11 @@ class Plan(BaseModelMixin, PlanBase):
 
 class PlanCost(BaseModelMixin):
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
-    cost = models.PositiveIntegerField()
+    cost = models.DecimalField(max_digits=10, decimal_places=2)
     recurrence_period = models.DateField()
 
 
-class Subscription(BaseModelMixin, SubscriptionBase):
+class Subscription(BaseModelMixin):
     STATUS_ACTIVE = "active"
     STATUS_CANCELLED = "cancelled"
     STATUS_DUE = "due"

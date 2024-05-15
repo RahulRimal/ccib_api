@@ -18,7 +18,6 @@ from django.contrib import admin
 from django.urls import path, include 
 
 urlpatterns = [
-    path('subscriptions/', include('subscriptions.urls')),
     path('admin/', admin.site.urls),
     path('auth/', include('autho.urls')),
     path('cooperative/', include('cooperative.urls')),

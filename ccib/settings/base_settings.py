@@ -42,7 +42,6 @@ NATIVE_APPS = ["autho", "cooperative", "common", "subscription"]
 
 THIRD_PARTY_APPS = [
     "rest_framework",
-    "subscriptions",
     "corsheaders",
     "djoser",
     "django_filters",
