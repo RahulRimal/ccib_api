@@ -79,9 +79,6 @@ class Company(BaseModelMixin):
         return self.name
     
 
-    # def has_list_permission(self):
-        # return True
-
     def has_read_permission(self):
         return True
 
