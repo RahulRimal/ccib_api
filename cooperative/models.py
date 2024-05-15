@@ -84,3 +84,9 @@ class Shareholder(BaseModelMixin):
         Company, on_delete=models.CASCADE, related_name="share_holders"
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class Finance(BaseModelMixin):
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=1000)
+    location = models.JSONField(default=dict)
