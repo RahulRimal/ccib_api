@@ -1,24 +1,37 @@
-from common.mixins import BaseModelSerializerMixin
+from rest_framework import serializers
+
+from cooperative.serializers import FinanceSerializer
+from common.mixins import DetailRelatedField, BaseModelSerializerMixin
+from cooperative.models import Finance
 from subscription.models import Plan, PlanCost, Subscription
-
-
-class PlanSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Plan
-        fields = ["idx", "name", "description", "period"]
 
 
 class PlanCostSerializer(BaseModelSerializerMixin):
     class Meta:
         model = PlanCost
-        fields = ["idx", "plan", "cost", "recurrance"]
+        fields = ["idx", "price", "recurrance_period"]
+
+
+class PlanSerializer(BaseModelSerializerMixin):
+    cost = DetailRelatedField(PlanCost, representation="idx")
+
+    class Meta:
+        model = Plan
+        fields = ["idx", "name", "description", "period", "cost"]
 
 
 class SubscriptionSerializer(BaseModelSerializerMixin):
+    plan_idx = serializers.CharField(write_only=True)
+    finance_idx = serializers.CharField(write_only=True)
+    finance = FinanceSerializer(read_only=True)
+    plan = PlanSerializer(read_only=True)
+
     class Meta:
         model = Subscription
         fields = [
             "idx",
+            "plan_idx",
+            "finance_idx",
             "finance",
             "plan",
             "billing_start",
@@ -27,6 +40,19 @@ class SubscriptionSerializer(BaseModelSerializerMixin):
             "next_billing",
             "grace_period",
             "status",
-            "verified",
+            "payment_verified",
             "auto_renewable",
         ]
+
+    def create(self, validated_data):
+        try:
+            finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
+        except Finance.DoesNotExist:
+            raise serializers.ValidationError("Finance does not exist")
+        validated_data["finance"] = finance
+        try:
+            plan = Plan.objects.get(idx=validated_data.pop("plan_idx"))
+        except Plan.DoesNotExist:
+            raise serializers.ValidationError("Plan does not exist")
+        validated_data["plan"] = plan
+        return super().create(validated_data)

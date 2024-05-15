@@ -8,7 +8,7 @@ router = DefaultRouter()
 router.register('loans', views.LoanViewSet, basename='loans')
 router.register('companys', views.CompanyViewSet, basename='companys')
 router.register('loanapplications', views.LoanApplicationViewSet, basename='loanapplications')
-router.register('finance', views.FinaceViewSet, basename='finance')
+router.register('finance', views.FinanceViewSet, basename='finance')
 
 loan_router = NestedDefaultRouter(router, 'loans', lookup='loan')
 

@@ -311,7 +311,7 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
         ]
 
 
-class FinaceSerializer(BaseModelSerializerMixin):
+class FinanceSerializer(BaseModelSerializerMixin):
     class Meta:
         model = Finance
         fields = ["idx", "name", "description", "location"]

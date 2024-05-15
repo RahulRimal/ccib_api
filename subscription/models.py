@@ -3,6 +3,10 @@ from common.models import BaseModelMixin
 from cooperative.models import Finance
 
 
+class PlanCost(BaseModelMixin):
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    recurrance_period = models.DateField()
+
 class Plan(BaseModelMixin):
     PERIOD_MONTHLY = "monthly"
     PERIOD_YEARLY = "yearly"
@@ -19,12 +23,7 @@ class Plan(BaseModelMixin):
     period = models.CharField(
         max_length=10, choices=PERIOD_CHOICES, default=PERIOD_YEARLY
     )
-
-
-class PlanCost(BaseModelMixin):
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
-    recurrence_period = models.DateField()
+    cost = models.ForeignKey(PlanCost, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class Subscription(BaseModelMixin):
