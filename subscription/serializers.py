@@ -1,3 +1,4 @@
+import datetime
 from rest_framework import serializers
 
 from cooperative.serializers import FinanceSerializer
@@ -9,7 +10,7 @@ from subscription.models import Plan, PlanCost, Subscription
 class PlanCostSerializer(BaseModelSerializerMixin):
     class Meta:
         model = PlanCost
-        fields = ["idx", "price", "recurrance_period"]
+        fields = ["idx", "price"]
 
 
 class PlanSerializer(BaseModelSerializerMixin):
@@ -25,6 +26,8 @@ class SubscriptionSerializer(BaseModelSerializerMixin):
     finance_idx = serializers.CharField(write_only=True)
     finance = FinanceSerializer(read_only=True)
     plan = PlanSerializer(read_only=True)
+
+
 
     class Meta:
         model = Subscription
@@ -42,6 +45,7 @@ class SubscriptionSerializer(BaseModelSerializerMixin):
             "status",
             "payment_verified",
             "auto_renewable",
+            "recurrance_period",
         ]
 
     def create(self, validated_data):
@@ -55,4 +59,17 @@ class SubscriptionSerializer(BaseModelSerializerMixin):
         except Plan.DoesNotExist:
             raise serializers.ValidationError("Plan does not exist")
         validated_data["plan"] = plan
+        validated_data["recurrance_period"] = Subscription.get_recurrance_period(plan.period, validated_data["billing_start"])
         return super().create(validated_data)
+    
+   
+    
+
+
+
+
+     
+
+
+    
+
