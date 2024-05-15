@@ -77,6 +77,13 @@ class Company(BaseModelMixin):
 
     def __str__(self):
         return self.name
+    
+
+    # def has_list_permission(self):
+        # return True
+
+    def has_read_permission(self):
+        return True
 
 
 class Shareholder(BaseModelMixin):
