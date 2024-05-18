@@ -143,6 +143,8 @@ REST_FRAMEWORK = {
     "COERCE_DECIMAL_TO_STRING": False,
 }
 
+AUTH_USER_MODEL = "autho.User"
+
 CORS_ALLOW_ALL_ORIGINS: bool = True
 
 try:
