@@ -4,9 +4,6 @@ from common.models import BaseModelMixin
 from cooperative.models import Finance
 
 
-class PlanCost(BaseModelMixin):
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-
 
 class Plan(BaseModelMixin):
     PERIOD_MONTHLY = "monthly"
@@ -24,7 +21,10 @@ class Plan(BaseModelMixin):
     period = models.CharField(
         max_length=10, choices=PERIOD_CHOICES, default=PERIOD_YEARLY
     )
-    cost = models.ForeignKey(PlanCost, on_delete=models.CASCADE, blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    is_active = models.BooleanField(default=True)
+
+
 
 
 class Subscription(BaseModelMixin):
@@ -46,8 +46,8 @@ class Subscription(BaseModelMixin):
     next_billing = models.DateField()
     grace_period = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_DUE)
-    payment_verified = models.BooleanField(default=False)
-    auto_renewable = models.BooleanField(default=True)
+    is_payment_verified = models.BooleanField(default=False)
+    is_auto_renewable = models.BooleanField(default=True)
     recurrance_period = models.DateField(null=True, blank=True)
 
     @staticmethod

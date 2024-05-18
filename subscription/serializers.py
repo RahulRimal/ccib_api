@@ -4,21 +4,19 @@ from rest_framework import serializers
 from cooperative.serializers import FinanceSerializer
 from common.mixins import DetailRelatedField, BaseModelSerializerMixin
 from cooperative.models import Finance
-from subscription.models import Plan, PlanCost, Subscription
+from subscription.models import Plan, Subscription
 
 
-class PlanCostSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = PlanCost
-        fields = ["idx", "price"]
+# class PlanCostSerializer(BaseModelSerializerMixin):
+#     class Meta:
+#         model = PlanCost
+#         fields = ["idx", "price"]
 
 
 class PlanSerializer(BaseModelSerializerMixin):
-    cost = DetailRelatedField(PlanCost, representation="idx")
-
     class Meta:
         model = Plan
-        fields = ["idx", "name", "description", "period", "cost"]
+        fields = ["idx", "name", "description", "period", "price", "is_active"]
 
 
 class SubscriptionSerializer(BaseModelSerializerMixin):
@@ -43,8 +41,8 @@ class SubscriptionSerializer(BaseModelSerializerMixin):
             "next_billing",
             "grace_period",
             "status",
-            "payment_verified",
-            "auto_renewable",
+            "is_payment_verified",
+            "is_auto_renewable",
             "recurrance_period",
         ]
 

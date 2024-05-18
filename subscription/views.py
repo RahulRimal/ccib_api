@@ -2,9 +2,9 @@ from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 
 from common.mixins import BaseApiMixin
-from subscription.models import Plan, PlanCost, Subscription
+from subscription.models import Plan, Subscription
 from subscription.serializers import (
-    PlanCostSerializer,
+
     PlanSerializer,
     SubscriptionSerializer,
 )
@@ -15,9 +15,9 @@ class PlanViewSet(BaseApiMixin, ModelViewSet):
     serializer_class = PlanSerializer
 
 
-class PlanCostViewSet(BaseApiMixin, ModelViewSet):
-    queryset = PlanCost.objects.all()
-    serializer_class = PlanCostSerializer
+# class PlanCostViewSet(BaseApiMixin, ModelViewSet):
+#     queryset = PlanCost.objects.all()
+#     serializer_class = PlanCostSerializer
 
 
 class SubscriptionViewSet(BaseApiMixin, ModelViewSet):
