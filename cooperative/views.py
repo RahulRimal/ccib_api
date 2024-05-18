@@ -14,7 +14,7 @@ from cooperative.serializers import (
     CreateLoanApplicationSerializer,
     CreateLoanSerializer,
     CreatePersonalGuarantorSerializer,
-    FinaceSerializer,
+    FinanceSerializer,
     LoanApplicationSerializer,
     LoanSerializer,
     PersonalGuarantorSerializer,
@@ -76,6 +76,6 @@ class CompanyViewSet(BaseApiMixin, ModelViewSet):
         return CompanySerializer
 
 
-class FinaceViewSet(BaseApiMixin, ModelViewSet):
+class FinanceViewSet(BaseApiMixin, ModelViewSet):
     queryset = Finance.objects.all()
-    serializer_class = FinaceSerializer
+    serializer_class = FinanceSerializer

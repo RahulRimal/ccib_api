@@ -1,6 +1,8 @@
+import datetime
 from django.db import models
 from common.models import BaseModelMixin
 from cooperative.models import Finance
+
 
 
 class Plan(BaseModelMixin):
@@ -19,12 +21,10 @@ class Plan(BaseModelMixin):
     period = models.CharField(
         max_length=10, choices=PERIOD_CHOICES, default=PERIOD_YEARLY
     )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    is_active = models.BooleanField(default=True)
 
 
-class PlanCost(BaseModelMixin):
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
-    recurrence_period = models.DateField()
 
 
 class Subscription(BaseModelMixin):
@@ -46,5 +46,17 @@ class Subscription(BaseModelMixin):
     next_billing = models.DateField()
     grace_period = models.PositiveIntegerField(default=0)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_DUE)
-    payment_verified = models.BooleanField(default=False)
-    auto_renewable = models.BooleanField(default=True)
+    is_payment_verified = models.BooleanField(default=False)
+    is_auto_renewable = models.BooleanField(default=True)
+    recurrance_period = models.DateField(null=True, blank=True)
+
+    @staticmethod
+    def get_recurrance_period(period, billing_start):
+        if period == Plan.PERIOD_MONTHLY:
+
+            return billing_start + datetime.timedelta(days=30)
+        elif period == Plan.PERIOD_YEARLY:
+
+            return billing_start + datetime.timedelta(days=365)
+        else:
+            return None
