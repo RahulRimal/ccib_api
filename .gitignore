@@ -6,3 +6,5 @@ media/
 
 *ipynb
 .flake8
+
+local_settings.py

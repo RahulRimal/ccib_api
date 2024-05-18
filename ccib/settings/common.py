@@ -25,11 +25,7 @@ SECRET_KEY = 'django-insecure-pnn#yozemsti20h&2&qg4wjey%r-m$cyzloc2ds@)+$w(a*vq2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    "192.168.1.73",
-    "localhost",
-
-]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -150,3 +146,4 @@ REST_FRAMEWORK = {
 
 CORS_ALLOW_ALL_ORIGINS: bool = True
 
+from local_settings import *  # noqa
