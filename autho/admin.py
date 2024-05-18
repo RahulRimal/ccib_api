@@ -12,10 +12,9 @@ class UserAdmin(admin.ModelAdmin):
         "username",
         "first_name",
         "last_name",
-        "citizenship_number",
-        "citizenship_issued_place",
-        "citizenship_issued_date",
         "dob",
-        "fathers_name",
+        "father_name",
         "phone_number",
+        "is_active",
+        "is_staff"
     ]
