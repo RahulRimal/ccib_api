@@ -36,6 +36,7 @@ class LoanApplicationAdmin(admin.ModelAdmin):
         "idx",
         "user",
         "loan_amount",
+        "status",
     ]
 
 
