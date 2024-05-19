@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from cooperative.models import Company, Loan, LoanApplication, PersonalGuarantor
+from cooperative.models import Company, Finance, Loan, LoanApplication, PersonalGuarantor
 
 
 # Register your models here.
@@ -51,4 +51,13 @@ class CompanyAdmin(admin.ModelAdmin):
         "pan_registration_place",
         "profiter",
         "lone_taker_type",
+    ]
+
+@admin.register(Finance)
+class FinanceAdmin(admin.ModelAdmin):
+    list_display = [
+        "idx",
+        "name",
+        "description",
+        "location",
     ]
