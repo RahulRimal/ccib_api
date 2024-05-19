@@ -7,6 +7,7 @@ from common.mixins import BaseModelSerializerMixin
 
 class UserSerializer(BaseModelSerializerMixin):
     username = serializers.ReadOnlyField()
+
     class Meta:
         model = User
         fields = [
@@ -19,11 +20,22 @@ class UserSerializer(BaseModelSerializerMixin):
             "citizenship_issued_place",
             "citizenship_issued_date",
             "dob",
-            "fathers_name",
+            "father_name",
             "phone_number",
         ]
 
     def create(self, validated_data):
-        username = generate_username(validated_data["first_name"], validated_data["last_name"]) 
+        username = generate_username(
+            validated_data["first_name"], validated_data["last_name"]
+        )
         validated_data["username"] = username
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+     username = generate_username(
+        validated_data.get("first_name", instance.first_name),
+        validated_data.get("last_name", instance.last_name),
+    )
+     validated_data["username"] = username
+     return super().update(instance, validated_data)
+
