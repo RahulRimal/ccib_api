@@ -96,6 +96,9 @@ class Finance(BaseModelMixin):
     description = models.CharField(max_length=1000)
     location = models.JSONField(default=dict)
 
+    def __str__(self):
+        return self.name
+
 
 class LoanApplication(BaseModelMixin):
 
