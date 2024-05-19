@@ -66,6 +66,12 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
         #     return PersonalGuarantor
 
 
+class FinanceSerializer(BaseModelSerializerMixin):
+    class Meta:
+        model = Finance
+        fields = ["idx", "name", "description", "location"]
+
+
 class LoanSerializer(BaseModelSerializerMixin):
     class Meta:
         model = Loan
@@ -117,29 +123,16 @@ class UpdateLoanSerializer(BaseModelSerializerMixin):
 
 class LoanApplicationSerializer(BaseModelSerializerMixin):
     user = UserSerializer()
-    first_name = serializers.CharField(write_only=True)
-    middle_name = serializers.CharField(write_only=True)
-    last_name = serializers.CharField(write_only=True)
-    citizenship_number = serializers.CharField(write_only=True)
-    citizenship_issued_place = serializers.CharField(write_only=True)
-    citizenship_issued_date = serializers.DateField(write_only=True)
-    phone_number = serializers.CharField(write_only=True)
-    fathers_name = serializers.CharField(write_only=True)
+    finance = FinanceSerializer()
 
     class Meta:
         model = LoanApplication
         fields = [
             "idx",
             "user",
-            "first_name",
-            "middle_name",
-            "last_name",
-            "citizenship_number",
-            "citizenship_issued_place",
-            "citizenship_issued_date",
-            "fathers_name",
-            "phone_number",
+            "finance",
             "loan_amount",
+            "status"
         ]
 
     def create(self, validated_data):
@@ -173,7 +166,7 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
     citizenship_issued_place = serializers.CharField(write_only=True)
     citizenship_issued_date = serializers.DateField(write_only=True)
     phone_number = serializers.CharField(write_only=True)
-    fathers_name = serializers.CharField(write_only=True)
+    father_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = LoanApplication
@@ -186,7 +179,7 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
             "citizenship_number",
             "citizenship_issued_place",
             "citizenship_issued_date",
-            "fathers_name",
+            "father_name",
             "phone_number",
             "loan_amount",
         ]
@@ -222,7 +215,7 @@ class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
     citizenship_issued_place = serializers.CharField(write_only=True)
     citizenship_issued_date = serializers.DateField(write_only=True)
     phone_number = serializers.CharField(write_only=True)
-    fathers_name = serializers.CharField(write_only=True)
+    father_name = serializers.CharField(write_only=True)
 
     class Meta:
         model = LoanApplication
@@ -235,7 +228,7 @@ class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
             "citizenship_number",
             "citizenship_issued_place",
             "citizenship_issued_date",
-            "fathers_name",
+            "father_name",
             "phone_number",
             "loan_amount",
         ]
@@ -309,9 +302,3 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
             "profiter",
             "lone_taker_type",
         ]
-
-
-class FinanceSerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Finance
-        fields = ["idx", "name", "description", "location"]

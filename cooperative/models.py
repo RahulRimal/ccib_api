@@ -54,11 +54,6 @@ class Loan(BaseModelMixin):
     currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
     total_due = models.DecimalField(max_digits=12, decimal_places=2)
 
-class LoanApplication(BaseModelMixin):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
-
-
 class Company(BaseModelMixin):
 
     LONE_TAKER_PERSON = "personal"
@@ -100,3 +95,21 @@ class Finance(BaseModelMixin):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=1000)
     location = models.JSONField(default=dict)
+
+
+class LoanApplication(BaseModelMixin):
+
+    STATUS_PENDING = "pending"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_APPROVED, "Approved"),
+        (STATUS_REJECTED, "Rejected"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loan_applications")
+    loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="loan_applications")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
