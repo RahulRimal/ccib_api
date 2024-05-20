@@ -16,6 +16,7 @@ class UserSerializer(BaseModelSerializerMixin):
             "first_name",
             "middle_name",
             "last_name",
+            "email",
             "citizenship_number",
             "citizenship_issued_place",
             "citizenship_issued_date",
