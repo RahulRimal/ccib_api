@@ -29,6 +29,13 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
     
     @action(detail=False, methods=["POST"])
     def change_password(self, request: HttpRequest) -> Response:
+
+        if not request.user.is_authenticated:
+            return api_response_error(
+                {"detail": "User is not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        
         user: User = request.user
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
