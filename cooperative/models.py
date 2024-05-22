@@ -1,5 +1,6 @@
 from django.db import models
 from autho.models import User
+from django.utils.timezone import now
 
 from common.models import BaseModelMixin
 
@@ -15,44 +16,102 @@ class PersonalGuarantor(BaseModelMixin):
         return f"{self.user.first_name} {self.user.last_name}"
 
 
-
-
-
 # Loan model
+# class Loan(BaseModelMixin):
+    # DUE_TYPE_DAILY = "d"
+    # DUE_TYPE_MONTHLY = "m"
+    # DUE_TYPE_QUARTERLY = "q"
+    # DUE_TYPE_YEARLY = "y"
+
+    # INSTALLMENT_DUE_TYPE_CHOICES = [
+    #     (DUE_TYPE_DAILY, "Daily"),
+    #     (DUE_TYPE_MONTHLY, "Monthly"),
+    #     (DUE_TYPE_QUARTERLY, "Quarterly"),
+    #     (DUE_TYPE_YEARLY, "Yearly"),
+    # ]
+
+    # # Nature type choices
+    # NATURE_TERM = "term"
+    # NATURE_OVERDRAFT = "overdraft"
+
+    # NATURE_CHOICES = [
+    #     (NATURE_TERM, "Term"),
+    #     (NATURE_OVERDRAFT, "Overdraft (OD)"),
+    # ]
+
+    # name = models.CharField(max_length=100)
+    # nature = models.CharField(
+    #     max_length=25, choices=NATURE_CHOICES, default=NATURE_TERM
+    # )
+    # amount = models.DecimalField(max_digits=12, decimal_places=2)
+    # maturity_date = models.DateField()
+    # installment_due_type = models.CharField(
+    #     max_length=1, choices=INSTALLMENT_DUE_TYPE_CHOICES, default=DUE_TYPE_DAILY
+    # )
+    # emi_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
+    # total_due = models.DecimalField(max_digits=12, decimal_places=2)
+
 class Loan(BaseModelMixin):
-    DUE_TYPE_DAILY = "d"
-    DUE_TYPE_MONTHLY = "m"
-    DUE_TYPE_QUARTERLY = "q"
-    DUE_TYPE_YEARLY = "y"
+    STATUS_GOOD = "Good"
+    STATUS_WATCHLIST = "Watchlist"
+    STATUS_PASS = "Pass"
+    STATUS_NPL = "Non-Performing Loan"
+    STATUS_DOUBTFUL = "Doubtful"
+    STATUS_BAD_DEBT = "Bad Debt"
 
-    INSTALLMENT_DUE_TYPE_CHOICES = [
-        (DUE_TYPE_DAILY, "Daily"),
-        (DUE_TYPE_MONTHLY, "Monthly"),
-        (DUE_TYPE_QUARTERLY, "Quarterly"),
-        (DUE_TYPE_YEARLY, "Yearly"),
+    STATUS_CHOICES = [
+        (STATUS_GOOD, "Good"),
+        (STATUS_WATCHLIST, "Watchlist"),
+        (STATUS_PASS, "Pass"),
+        (STATUS_NPL, "Non-Performing Loan"),
+        (STATUS_DOUBTFUL, "Doubtful"),
+        (STATUS_BAD_DEBT, "Bad Debt"),
     ]
 
-    # Nature type choices
-    NATURE_TERM = "term"
-    NATURE_OVERDRAFT = "overdraft"
+    TYPE_TERM = "term"
+    TYPE_OVERDRAFT = "overdraft"
 
-    NATURE_CHOICES = [
-        (NATURE_TERM, "Term"),
-        (NATURE_OVERDRAFT, "Overdraft (OD)"),
+    TYPE_CHOICES = [
+        (TYPE_TERM, "Term"),
+        (TYPE_OVERDRAFT, "Overdraft (OD)"),
     ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
+    account_number = models.CharField(max_length=20, unique=True)
+    total_loan = models.DecimalField(max_digits=10, decimal_places=2)
+    total_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    loan_outstanding = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    loan_limit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    overdue_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_GOOD)
+    loan_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_TERM)
+    is_closed = models.BooleanField(default=False)
 
-    name = models.CharField(max_length=100)
-    nature = models.CharField(
-        max_length=25, choices=NATURE_CHOICES, default=NATURE_TERM
-    )
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    maturity_date = models.DateField()
-    installment_due_type = models.CharField(
-        max_length=1, choices=INSTALLMENT_DUE_TYPE_CHOICES, default=DUE_TYPE_DAILY
-    )
-    emi_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
-    total_due = models.DecimalField(max_digits=12, decimal_places=2)
+    def save(self, *args, **kwargs):
+        if self.pk is None and self.loan_limit == 0:
+         self.loan_limit = self.total_loan
+
+        self.loan_outstanding = self.total_loan - self.total_paid
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return self.account_number
+    
+
+class Installment(BaseModelMixin):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="installments")
+    due_date = models.DateField(default=now)
+    paid_date = models.DateField()
+    total_due = models.DecimalField(max_digits=10, decimal_places=2)
+    over_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    total_outstanding = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.loan.account_number
+
+ 
 
 class Company(BaseModelMixin):
 
@@ -116,3 +175,40 @@ class LoanApplication(BaseModelMixin):
     loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
     finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="loan_applications")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+
+
+
+class Security(BaseModelMixin):
+    LOAN_TYPE_REAL_ESTATE = "real estate"
+    LOAN_TYPE_FIXED_ASSET = "fixed asset"
+    LOAN_TYPE_HIGHER_PURCHASE = "higher purchase"
+
+    LOAN_TYPE_CHOICES = [
+        (LOAN_TYPE_REAL_ESTATE, "Real Estate"),
+        (LOAN_TYPE_FIXED_ASSET, "Fixed Asset (furnitures)"),
+        (LOAN_TYPE_HIGHER_PURCHASE, "Higher Purchase (vehicles)"),
+    ]
+
+    OWNERSHIP_OWN = "own"
+    OWNERSHIP_THIRD_PARTY = "third party"
+
+    OWNERSHIP_CHOICES = [
+        (OWNERSHIP_OWN, "Own"),
+        (OWNERSHIP_THIRD_PARTY, "Third Party"),
+    ]
+
+    NATURE_FIRST_CHARGE = "first_charge"
+
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="securities")
+    type = models.CharField(max_length=20, choices=LOAN_TYPE_CHOICES)
+    description = models.TextField()
+    ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES)
+    coverage_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    nature_of_charge = models.CharField(max_length=20, default=NATURE_FIRST_CHARGE, editable=False)
+    latest_value = models.DecimalField(max_digits=15, decimal_places=2)
+    latest_valuation_date = models.DateField()
+
+    def __str__(self):
+        return self.loan.account_number
+
+
