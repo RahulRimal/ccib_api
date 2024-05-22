@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -41,9 +42,9 @@ DJANGO_APPS = [
 NATIVE_APPS = ["autho", "cooperative", "common", "subscription"]
 
 THIRD_PARTY_APPS = [
+    "rest_framework_simplejwt",
     "rest_framework",
     "corsheaders",
-    "djoser",
     "django_filters",
 ]
 
@@ -141,7 +142,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "COERCE_DECIMAL_TO_STRING": False,
+     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
 }
+
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("JWT",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+}
+
 
 AUTH_USER_MODEL = "autho.User"
 
