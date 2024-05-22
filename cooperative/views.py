@@ -4,20 +4,27 @@ from common.mixins import BaseApiMixin
 from cooperative.models import (
     Company,
     Finance,
+    Installment,
     Loan,
     LoanApplication,
     PersonalGuarantor,
+    Security,
 )
+
 from cooperative.serializers import (
     CompanySerializer,
     CreateCompanySerializer,
+    CreateInstallmentSerializer,
     CreateLoanApplicationSerializer,
     CreateLoanSerializer,
     CreatePersonalGuarantorSerializer,
+    CreateSecuritySerializer,
     FinanceSerializer,
+    InstallmentSerializer,
     LoanApplicationSerializer,
     LoanSerializer,
     PersonalGuarantorSerializer,
+    SecuritySerializer,
     UpdateCompanySerializer,
     UpdateLoanApplicationSerializer,
     UpdateLoanSerializer,
@@ -79,3 +86,22 @@ class CompanyViewSet(BaseApiMixin, ModelViewSet):
 class FinanceViewSet(BaseApiMixin, ModelViewSet):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
+
+
+class InstallmentViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Installment.objects.all()
+ 
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateInstallmentSerializer
+        return InstallmentSerializer
+
+class SecurityViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Security.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateSecuritySerializer
+        return SecuritySerializer

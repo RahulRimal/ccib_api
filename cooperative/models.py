@@ -16,41 +16,6 @@ class PersonalGuarantor(BaseModelMixin):
         return f"{self.user.first_name} {self.user.last_name}"
 
 
-# Loan model
-# class Loan(BaseModelMixin):
-    # DUE_TYPE_DAILY = "d"
-    # DUE_TYPE_MONTHLY = "m"
-    # DUE_TYPE_QUARTERLY = "q"
-    # DUE_TYPE_YEARLY = "y"
-
-    # INSTALLMENT_DUE_TYPE_CHOICES = [
-    #     (DUE_TYPE_DAILY, "Daily"),
-    #     (DUE_TYPE_MONTHLY, "Monthly"),
-    #     (DUE_TYPE_QUARTERLY, "Quarterly"),
-    #     (DUE_TYPE_YEARLY, "Yearly"),
-    # ]
-
-    # # Nature type choices
-    # NATURE_TERM = "term"
-    # NATURE_OVERDRAFT = "overdraft"
-
-    # NATURE_CHOICES = [
-    #     (NATURE_TERM, "Term"),
-    #     (NATURE_OVERDRAFT, "Overdraft (OD)"),
-    # ]
-
-    # name = models.CharField(max_length=100)
-    # nature = models.CharField(
-    #     max_length=25, choices=NATURE_CHOICES, default=NATURE_TERM
-    # )
-    # amount = models.DecimalField(max_digits=12, decimal_places=2)
-    # maturity_date = models.DateField()
-    # installment_due_type = models.CharField(
-    #     max_length=1, choices=INSTALLMENT_DUE_TYPE_CHOICES, default=DUE_TYPE_DAILY
-    # )
-    # emi_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    # currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
-    # total_due = models.DecimalField(max_digits=12, decimal_places=2)
 
 class Loan(BaseModelMixin):
     STATUS_GOOD = "Good"
@@ -179,12 +144,12 @@ class LoanApplication(BaseModelMixin):
 
 
 class Security(BaseModelMixin):
-    LOAN_TYPE_REAL_ESTATE = "real estate"
+    LOAN_TYPE_REAL_ESTATE = "real state"
     LOAN_TYPE_FIXED_ASSET = "fixed asset"
     LOAN_TYPE_HIGHER_PURCHASE = "higher purchase"
 
     LOAN_TYPE_CHOICES = [
-        (LOAN_TYPE_REAL_ESTATE, "Real Estate"),
+        (LOAN_TYPE_REAL_ESTATE, "Real State"),
         (LOAN_TYPE_FIXED_ASSET, "Fixed Asset (furnitures)"),
         (LOAN_TYPE_HIGHER_PURCHASE, "Higher Purchase (vehicles)"),
     ]
@@ -200,9 +165,9 @@ class Security(BaseModelMixin):
     NATURE_FIRST_CHARGE = "first_charge"
 
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="securities")
-    type = models.CharField(max_length=20, choices=LOAN_TYPE_CHOICES)
+    type = models.CharField(max_length=20, choices=LOAN_TYPE_CHOICES, default=LOAN_TYPE_REAL_ESTATE)
     description = models.TextField()
-    ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES)
+    ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES, default=OWNERSHIP_OWN)
     coverage_percentage = models.DecimalField(max_digits=5, decimal_places=2)
     nature_of_charge = models.CharField(max_length=20, default=NATURE_FIRST_CHARGE, editable=False)
     latest_value = models.DecimalField(max_digits=15, decimal_places=2)
