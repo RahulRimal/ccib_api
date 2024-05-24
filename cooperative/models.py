@@ -34,12 +34,12 @@ class Loan(BaseModelMixin):
         (STATUS_BAD_DEBT, "Bad Debt"),
     ]
 
-    TYPE_TERM = "term"
-    TYPE_OVERDRAFT = "overdraft"
+    NATURE_TERM = "term"
+    NATURE_OVERDRAFT = "overdraft"
 
-    TYPE_CHOICES = [
-        (TYPE_TERM, "Term"),
-        (TYPE_OVERDRAFT, "Overdraft (OD)"),
+    NATURE_CHOICES = [
+        (NATURE_TERM, "Term"),
+        (NATURE_OVERDRAFT, "Overdraft (OD)"),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
     account_number = models.CharField(max_length=20, unique=True)
@@ -50,7 +50,7 @@ class Loan(BaseModelMixin):
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     overdue_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_GOOD)
-    loan_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_TERM)
+    loan_type = models.CharField(max_length=20, choices=NATURE_CHOICES, default=NATURE_TERM)
     is_closed = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
@@ -67,7 +67,7 @@ class Loan(BaseModelMixin):
 
 class Installment(BaseModelMixin):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="installments")
-    due_date = models.DateField(default=now)
+    due_date = models.DateField()
     paid_date = models.DateField()
     total_due = models.DecimalField(max_digits=10, decimal_places=2)
     over_paid = models.DecimalField(max_digits=10, decimal_places=2)
@@ -75,6 +75,8 @@ class Installment(BaseModelMixin):
 
     def __str__(self):
         return self.loan.account_number
+    
+
 
  
 
@@ -144,14 +146,14 @@ class LoanApplication(BaseModelMixin):
 
 
 class Security(BaseModelMixin):
-    LOAN_TYPE_REAL_ESTATE = "real state"
-    LOAN_TYPE_FIXED_ASSET = "fixed asset"
-    LOAN_TYPE_HIGHER_PURCHASE = "higher purchase"
+    TYPE_REAL_ESTATE = "real state"
+    TYPE_FIXED_ASSET = "fixed asset"
+    TYPE_HIGHER_PURCHASE = "higher purchase"
 
-    LOAN_TYPE_CHOICES = [
-        (LOAN_TYPE_REAL_ESTATE, "Real State"),
-        (LOAN_TYPE_FIXED_ASSET, "Fixed Asset (furnitures)"),
-        (LOAN_TYPE_HIGHER_PURCHASE, "Higher Purchase (vehicles)"),
+    TYPE_CHOICES = [
+        (TYPE_REAL_ESTATE, "Real State"),
+        (TYPE_FIXED_ASSET, "Fixed Asset (furnitures)"),
+        (TYPE_HIGHER_PURCHASE, "Higher Purchase (vehicles)"),
     ]
 
     OWNERSHIP_OWN = "own"
@@ -165,7 +167,7 @@ class Security(BaseModelMixin):
     NATURE_FIRST_CHARGE = "first_charge"
 
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="securities")
-    type = models.CharField(max_length=20, choices=LOAN_TYPE_CHOICES, default=LOAN_TYPE_REAL_ESTATE)
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_REAL_ESTATE)
     description = models.TextField()
     ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES, default=OWNERSHIP_OWN)
     coverage_percentage = models.DecimalField(max_digits=5, decimal_places=2)
