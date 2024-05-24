@@ -11,7 +11,7 @@ from cooperative.models import (
     Loan,
     LoanApplication,
     PersonalGuarantor,
-    Security,
+    SecurityDeposit,
 )
 
 
@@ -402,7 +402,7 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
 class SecurityDepositSerializer(BaseModelSerializerMixin):
     loan = LoanSerializer(read_only=True)
     class Meta:
-        model = Security
+        model = SecurityDeposit
         fields = [
             "idx",
             "loan",
@@ -420,7 +420,7 @@ class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
     loan = LoanSerializer(read_only=True)
     loan_idx = serializers.CharField(write_only=True)
     class Meta:
-        model = Security
+        model = SecurityDeposit
         fields = [
             "idx",
             "loan",
@@ -437,5 +437,5 @@ class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
     def create(self, validated_data):
         loan = Loan.objects.get(idx=validated_data.pop("loan_idx"))
         validated_data["loan"] = loan
-        security = Security.objects.create(**validated_data)
+        security = SecurityDeposit.objects.create(**validated_data)
         return security
