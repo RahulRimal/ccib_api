@@ -8,7 +8,7 @@ from cooperative.models import (
     Loan,
     LoanApplication,
     PersonalGuarantor,
-    Security,
+    SecurityDeposit,
 )
 
 from cooperative.serializers import (
@@ -99,7 +99,7 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 
 class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
-    queryset = Security.objects.all()
+    queryset = SecurityDeposit.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
