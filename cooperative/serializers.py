@@ -144,16 +144,13 @@ class UpdateLoanSerializer(BaseModelSerializerMixin):
         ]
     
 
-
 class InstallmentSerializer(BaseModelSerializerMixin):
     loan = LoanSerializer(read_only=True)
-    # loan_idx = serializers.CharField(write_only=True)
     class Meta:
         model = Installment
         fields = [
             "idx",
             "loan",
-            # "loan_idx",
             "due_date",
             "paid_date",
             "total_due",
@@ -402,7 +399,7 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
         ]
 
 
-class SecuritySerializer(BaseModelSerializerMixin):
+class SecurityDepositSerializer(BaseModelSerializerMixin):
     loan = LoanSerializer(read_only=True)
     class Meta:
         model = Security
@@ -419,7 +416,7 @@ class SecuritySerializer(BaseModelSerializerMixin):
         ]
 
 
-class CreateSecuritySerializer(BaseModelSerializerMixin):
+class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
     loan = LoanSerializer(read_only=True)
     loan_idx = serializers.CharField(write_only=True)
     class Meta:

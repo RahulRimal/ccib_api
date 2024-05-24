@@ -1,6 +1,5 @@
 from django.db import models
 from autho.models import User
-from django.utils.timezone import now
 
 from common.models import BaseModelMixin
 
@@ -73,11 +72,7 @@ class Installment(BaseModelMixin):
     over_paid = models.DecimalField(max_digits=10, decimal_places=2)
     total_outstanding = models.DecimalField(max_digits=10, decimal_places=2)
 
-    def __str__(self):
-        return self.loan.account_number
     
-
-
  
 
 class Company(BaseModelMixin):
@@ -145,15 +140,15 @@ class LoanApplication(BaseModelMixin):
 
 
 
-class Security(BaseModelMixin):
+class SecurityDeposit(BaseModelMixin):
     TYPE_REAL_ESTATE = "real state"
     TYPE_FIXED_ASSET = "fixed asset"
     TYPE_HIGHER_PURCHASE = "higher purchase"
 
     TYPE_CHOICES = [
-        (TYPE_REAL_ESTATE, "Real State"),
-        (TYPE_FIXED_ASSET, "Fixed Asset (furnitures)"),
-        (TYPE_HIGHER_PURCHASE, "Higher Purchase (vehicles)"),
+        (TYPE_REAL_ESTATE, TYPE_REAL_ESTATE.capitalize()),
+        (TYPE_FIXED_ASSET, TYPE_FIXED_ASSET.capitalize()),
+        (TYPE_HIGHER_PURCHASE, TYPE_HIGHER_PURCHASE.capitalize()),
     ]
 
     OWNERSHIP_OWN = "own"
@@ -176,6 +171,6 @@ class Security(BaseModelMixin):
     latest_valuation_date = models.DateField()
 
     def __str__(self):
-        return self.loan.account_number
+        return self.description
 
 

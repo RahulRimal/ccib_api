@@ -18,13 +18,13 @@ from cooperative.serializers import (
     CreateLoanApplicationSerializer,
     CreateLoanSerializer,
     CreatePersonalGuarantorSerializer,
-    CreateSecuritySerializer,
+    CreateSecurityDepositSerializer,
     FinanceSerializer,
     InstallmentSerializer,
     LoanApplicationSerializer,
     LoanSerializer,
     PersonalGuarantorSerializer,
-    SecuritySerializer,
+    SecurityDepositSerializer,
     UpdateCompanySerializer,
     UpdateLoanApplicationSerializer,
     UpdateLoanSerializer,
@@ -97,11 +97,11 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
             return CreateInstallmentSerializer
         return InstallmentSerializer
 
-class SecurityViewSet(BaseApiMixin, ModelViewSet):
+class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Security.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
-            return CreateSecuritySerializer
-        return SecuritySerializer
+            return CreateSecurityDepositSerializer
+        return SecurityDepositSerializer
