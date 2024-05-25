@@ -36,6 +36,15 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
     Username and password are required. Other fields are optional.
     """
 
+    GENDER_MALE = "male"
+    GENDER_FEMALE = "female"
+
+    GENDER_CHOICES = (
+        (GENDER_MALE, GENDER_MALE.capitalize()),
+        (GENDER_FEMALE, GENDER_FEMALE.capitalize()),
+    )
+
+
     username_validator = UnicodeUsernameValidator()
 
     username = models.CharField(
@@ -57,11 +66,14 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
     citizenship_number = models.CharField(max_length=50)
     citizenship_issued_place = models.CharField(max_length=255)
     citizenship_issued_date = models.DateField()
+    gender = models.CharField(_("gender"), max_length=10, choices=GENDER_CHOICES, default=GENDER_MALE)
     dob = models.DateField(blank=True, null=True)
     father_name = models.CharField(max_length=255)
     mother_name = models.CharField(max_length=255)
     grandfather_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    permanent_address = models.CharField(max_length=255)
+    temporary_address = models.CharField(max_length=255)
 
     is_staff = models.BooleanField(
         _("staff status"),

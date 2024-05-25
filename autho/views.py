@@ -18,6 +18,7 @@ from autho.serializers import UserSerializer
 class UserViewSet(BaseApiMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filterset_fields = ["first_name", "last_name", "phone_number", "loans__account_number"]
 
 
     @action(detail=False, methods = ['GET', 'PATCH'])
