@@ -50,6 +50,7 @@ class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
 class LoanViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Loan.objects.all()
+    filterset_fields = ["status","user", "account_number"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -62,6 +63,7 @@ class LoanViewSet(BaseApiMixin, ModelViewSet):
 class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanApplication.objects.all()
+    filterset_fields = ["status","user", "finance"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -74,6 +76,7 @@ class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
 class CompanyViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Company.objects.all()
+    filterset_fields = ["name", "pan_num", "vat_num"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -86,11 +89,13 @@ class CompanyViewSet(BaseApiMixin, ModelViewSet):
 class FinanceViewSet(BaseApiMixin, ModelViewSet):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
+    filterset_fields = ["name"]
 
 
 class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Installment.objects.all()
+    filterset_fields = ["loan"]
  
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -100,6 +105,7 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = SecurityDeposit.objects.all()
+    filterset_fields = ["loan", "type", "ownership_type"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":

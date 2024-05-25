@@ -2,6 +2,8 @@ from shortuuidfield import ShortUUIDField
 from typing import Any, Dict
 
 from rest_framework.fields import get_attribute
+from django_filters.rest_framework import DjangoFilterBackend
+
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import serializers
@@ -39,6 +41,7 @@ class BaseModelSerializerMixin(serializers.ModelSerializer):
 
 class BaseApiMixin:
     lookup_field = "idx"
+    filter_backends = [DjangoFilterBackend]
 
     class Meta:
         abstract = True
