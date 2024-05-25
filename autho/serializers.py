@@ -22,7 +22,7 @@ class UserSerializer(BaseModelSerializerMixin):
             "dob",
             "father_name",
             "mother_name",
-            "grandfathers_name",
+            "grandfather_name",
             "phone_number",
         ]
 

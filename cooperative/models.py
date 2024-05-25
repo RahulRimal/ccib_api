@@ -17,28 +17,28 @@ class PersonalGuarantor(BaseModelMixin):
 
 
 class Loan(BaseModelMixin):
-    STATUS_GOOD = "Good"
-    STATUS_WATCHLIST = "Watchlist"
-    STATUS_PASS = "Pass"
-    STATUS_NPL = "Non-Performing Loan"
-    STATUS_DOUBTFUL = "Doubtful"
-    STATUS_BAD_DEBT = "Bad Debt"
+    STATUS_GOOD = "good"
+    STATUS_WATCHLIST = "watchlist"
+    STATUS_PASS = "pass"
+    STATUS_NPL = "npl"
+    STATUS_DOUBTFUL = "doubtful"
+    STATUS_BAD_DEBT = "bad Debt"
 
     STATUS_CHOICES = [
-        (STATUS_GOOD, "Good"),
-        (STATUS_WATCHLIST, "Watchlist"),
-        (STATUS_PASS, "Pass"),
-        (STATUS_NPL, "Non-Performing Loan"),
-        (STATUS_DOUBTFUL, "Doubtful"),
-        (STATUS_BAD_DEBT, "Bad Debt"),
+        (STATUS_GOOD, STATUS_GOOD.capitalize()),
+        (STATUS_WATCHLIST, STATUS_WATCHLIST.capitalize()),
+        (STATUS_PASS, STATUS_PASS.capitalize()),
+        (STATUS_NPL, STATUS_NPL.capitalize()),
+        (STATUS_DOUBTFUL, STATUS_DOUBTFUL.capitalize()),
+        (STATUS_BAD_DEBT, STATUS_BAD_DEBT.capitalize()),
     ]
 
     NATURE_TERM = "term"
     NATURE_OVERDRAFT = "overdraft"
 
     NATURE_CHOICES = [
-        (NATURE_TERM, "Term"),
-        (NATURE_OVERDRAFT, "Overdraft (OD)"),
+        (NATURE_TERM, NATURE_TERM.capitalize()),
+        (NATURE_OVERDRAFT, NATURE_OVERDRAFT.capitalize()),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
     account_number = models.CharField(max_length=20, unique=True)
@@ -82,8 +82,8 @@ class Company(BaseModelMixin):
 
     # Choices for lone taker type
     LONE_TAKER_TYPE_CHOICES = [
-        (LONE_TAKER_PERSON, "Personal"),
-        (LONE_TAKER_COMPANY, "Company"),
+        (LONE_TAKER_PERSON, LONE_TAKER_PERSON.capitalize()),
+        (LONE_TAKER_COMPANY, LONE_TAKER_COMPANY.capitalize()),
     ]
 
     name = models.CharField(max_length=255)
@@ -155,8 +155,8 @@ class SecurityDeposit(BaseModelMixin):
     OWNERSHIP_THIRD_PARTY = "third party"
 
     OWNERSHIP_CHOICES = [
-        (OWNERSHIP_OWN, "Own"),
-        (OWNERSHIP_THIRD_PARTY, "Third Party"),
+        (OWNERSHIP_OWN, OWNERSHIP_OWN.capitalize()),
+        (OWNERSHIP_THIRD_PARTY, OWNERSHIP_THIRD_PARTY.capitalize()),
     ]
 
     NATURE_FIRST_CHARGE = "first_charge"

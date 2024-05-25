@@ -60,7 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
     dob = models.DateField(blank=True, null=True)
     father_name = models.CharField(max_length=255)
     mother_name = models.CharField(max_length=255)
-    grandfathers_name = models.CharField(max_length=255)
+    grandfather_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
     is_staff = models.BooleanField(
