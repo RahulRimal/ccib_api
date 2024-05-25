@@ -22,6 +22,8 @@ class UserSerializer(BaseModelSerializerMixin):
             "citizenship_issued_date",
             "dob",
             "father_name",
+            "mother_name",
+            "grandfather_name",
             "phone_number",
         ]
 

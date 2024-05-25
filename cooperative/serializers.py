@@ -7,9 +7,11 @@ from common.mixins import BaseModelSerializerMixin
 from cooperative.models import (
     Company,
     Finance,
+    Installment,
     Loan,
     LoanApplication,
     PersonalGuarantor,
+    SecurityDeposit,
 )
 
 
@@ -73,52 +75,112 @@ class FinanceSerializer(BaseModelSerializerMixin):
 
 
 class LoanSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Loan
         fields = [
             "idx",
-            "name",
-            "nature",
-            "amount",
-            "maturity_date",
-            "installment_due_type",
-            "emi_amount",
-            "currently_outstanding",
-            "total_due",
-            "personal_guarantors",
+            "user",
+            "account_number",
+            "total_loan",
+            "total_paid",
+            "loan_outstanding",
+            "loan_limit",
+            "interest_rate",
+            "overdue_amount",
+            "status",
+            "loan_type",
+            "is_closed",
         ]
-
 
 class CreateLoanSerializer(BaseModelSerializerMixin):
+    user_idx = serializers.CharField(write_only=True)
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Loan
         fields = [
             "idx",
-            "name",
-            "nature",
-            "amount",
-            "maturity_date",
-            "installment_due_type",
-            "emi_amount",
-            "currently_outstanding",
-            "total_due",
+            "user",
+            "user_idx",
+            "account_number",
+            "total_loan",
+            "total_paid",
+            "loan_outstanding",
+            "loan_limit",
+            "interest_rate",
+            "overdue_amount",
+            "status",
+            "loan_type",
+            "is_closed",
         ]
 
+    def create(self, validated_data):
+        try:
+            user = User.objects.get(idx=validated_data.pop("user_idx"))
+            validated_data["user"] = user
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User does not exist")
+        return super().create(validated_data)
+        
 
 class UpdateLoanSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+
     class Meta:
         model = Loan
         fields = [
             "idx",
-            "name",
-            "nature",
-            "amount",
-            "maturity_date",
-            "installment_due_type",
-            "emi_amount",
-            "currently_outstanding",
-            "total_due",
+            "user",
+            "account_number",
+            "total_loan",
+            "total_paid",
+            "loan_outstanding",
+            "loan_limit",
+            "interest_rate",
+            "overdue_amount",
+            "status",
+            "loan_type",
+            "is_closed",
         ]
+    
+
+class InstallmentSerializer(BaseModelSerializerMixin):
+    loan = LoanSerializer(read_only=True)
+    class Meta:
+        model = Installment
+        fields = [
+            "idx",
+            "loan",
+            "due_date",
+            "paid_date",
+            "total_due",
+            "over_paid",
+            "total_outstanding",
+        ]
+
+class CreateInstallmentSerializer(BaseModelSerializerMixin):
+    loan_idx = serializers.CharField(write_only=True)
+    loan = LoanSerializer(read_only=True)
+    class Meta:
+        model = Installment
+        fields = [
+            "idx",
+            "loan",
+            "loan_idx",
+            "due_date",
+            "paid_date",
+            "total_due",
+            "over_paid",
+            "total_outstanding",
+        ]
+    
+    def create(self, validated_data):
+        try:
+            loan = Loan.objects.get(idx=validated_data.pop("loan_idx"))
+            validated_data["loan"] = loan
+        except Loan.DoesNotExist:
+            raise serializers.ValidationError("Loan does not exist")
+        return super().create(validated_data)
 
 
 class LoanApplicationSerializer(BaseModelSerializerMixin):
@@ -189,6 +251,33 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
             "status",
         ]
 
+    # def create(self, validated_data):
+    #     try:
+    #         finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
+    #     except Finance.DoesNotExist:
+    #         raise serializers.ValidationError("Finance does not exist")
+    #     validated_data["finance"] = finance
+
+    #     try:
+    #         user = User.objects.get(
+    #             first_name=validated_data["first_name"],
+    #             middle_name=validated_data["middle_name"],
+    #             last_name=validated_data["last_name"],
+    #         )
+    #     except User.DoesNotExist:
+    #         data = validated_data
+    #         data.pop("loan_amount")   
+    #         data["username"] = generate_username(
+    #             validated_data["first_name"], validated_data["last_name"]
+    #         )
+    #         user = User.objects.create(**data)
+
+    #     validated_data["user"] = user
+    #     loan_application = LoanApplication.objects.create(
+    #         finance=finance, user=user, loan_amount=validated_data["loan_amount"]
+    #     )
+    #     return loan_application
+
     def create(self, validated_data):
         try:
             finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
@@ -203,12 +292,20 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
                 last_name=validated_data["last_name"],
             )
         except User.DoesNotExist:
-            data = validated_data
-            data.pop("loan_amount")
-            data["username"] = generate_username(
-                validated_data["first_name"], validated_data["last_name"]
-            )
-            user = User.objects.create(**data)
+            user_data = {
+                "first_name": validated_data["first_name"],
+                "middle_name": validated_data["middle_name"],
+                "last_name": validated_data["last_name"],
+                "citizenship_number": validated_data["citizenship_number"],
+                "citizenship_issued_place": validated_data["citizenship_issued_place"],
+                "citizenship_issued_date": validated_data["citizenship_issued_date"],
+                "phone_number": validated_data["phone_number"],
+                "father_name": validated_data["father_name"],
+                "username": generate_username(
+                    validated_data["first_name"], validated_data["last_name"]
+                ),
+            }
+            user = User.objects.create(**user_data)
 
         validated_data["user"] = user
         loan_application = LoanApplication.objects.create(
@@ -300,3 +397,45 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
             "profiter",
             "lone_taker_type",
         ]
+
+
+class SecurityDepositSerializer(BaseModelSerializerMixin):
+    loan = LoanSerializer(read_only=True)
+    class Meta:
+        model = SecurityDeposit
+        fields = [
+            "idx",
+            "loan",
+            "type",
+            "description",
+            "ownership_type",
+            "coverage_percentage",
+            "nature_of_charge",
+            "latest_value",
+            "latest_valuation_date",
+        ]
+
+
+class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
+    loan = LoanSerializer(read_only=True)
+    loan_idx = serializers.CharField(write_only=True)
+    class Meta:
+        model = SecurityDeposit
+        fields = [
+            "idx",
+            "loan",
+            "loan_idx",
+            "type",
+            "description",
+            "ownership_type",
+            "coverage_percentage",
+            "nature_of_charge",
+            "latest_value",
+            "latest_valuation_date",
+        ]
+    
+    def create(self, validated_data):
+        loan = Loan.objects.get(idx=validated_data.pop("loan_idx"))
+        validated_data["loan"] = loan
+        security = SecurityDeposit.objects.create(**validated_data)
+        return security

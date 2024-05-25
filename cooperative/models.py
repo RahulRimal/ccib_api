@@ -16,43 +16,65 @@ class PersonalGuarantor(BaseModelMixin):
 
 
 
-
-
-# Loan model
 class Loan(BaseModelMixin):
-    DUE_TYPE_DAILY = "d"
-    DUE_TYPE_MONTHLY = "m"
-    DUE_TYPE_QUARTERLY = "q"
-    DUE_TYPE_YEARLY = "y"
+    STATUS_GOOD = "good"
+    STATUS_WATCHLIST = "watchlist"
+    STATUS_PASS = "pass"
+    # npl = non_performing_loan
+    STATUS_NPL = "npl"
+    STATUS_DOUBTFUL = "doubtful"
+    STATUS_BAD_DEBT = "bad debt"
 
-    INSTALLMENT_DUE_TYPE_CHOICES = [
-        (DUE_TYPE_DAILY, "Daily"),
-        (DUE_TYPE_MONTHLY, "Monthly"),
-        (DUE_TYPE_QUARTERLY, "Quarterly"),
-        (DUE_TYPE_YEARLY, "Yearly"),
+    STATUS_CHOICES = [
+        (STATUS_GOOD, STATUS_GOOD.capitalize()),
+        (STATUS_WATCHLIST, STATUS_WATCHLIST.capitalize()),
+        (STATUS_PASS, STATUS_PASS.capitalize()),
+        (STATUS_NPL, STATUS_NPL.capitalize()),
+        (STATUS_DOUBTFUL, STATUS_DOUBTFUL.capitalize()),
+        (STATUS_BAD_DEBT, STATUS_BAD_DEBT.capitalize()),
     ]
 
-    # Nature type choices
     NATURE_TERM = "term"
     NATURE_OVERDRAFT = "overdraft"
 
     NATURE_CHOICES = [
-        (NATURE_TERM, "Term"),
-        (NATURE_OVERDRAFT, "Overdraft (OD)"),
+        (NATURE_TERM, NATURE_TERM.capitalize()),
+        (NATURE_OVERDRAFT, NATURE_OVERDRAFT.capitalize()),
     ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
+    account_number = models.CharField(max_length=20, unique=True)
+    total_loan = models.DecimalField(max_digits=10, decimal_places=2)
+    total_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    loan_outstanding = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    loan_limit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    overdue_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_GOOD)
+    loan_type = models.CharField(max_length=20, choices=NATURE_CHOICES, default=NATURE_TERM)
+    is_closed = models.BooleanField(default=False)
 
-    name = models.CharField(max_length=100)
-    nature = models.CharField(
-        max_length=25, choices=NATURE_CHOICES, default=NATURE_TERM
-    )
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    maturity_date = models.DateField()
-    installment_due_type = models.CharField(
-        max_length=1, choices=INSTALLMENT_DUE_TYPE_CHOICES, default=DUE_TYPE_DAILY
-    )
-    emi_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currently_outstanding = models.DecimalField(max_digits=12, decimal_places=2)
-    total_due = models.DecimalField(max_digits=12, decimal_places=2)
+    def save(self, *args, **kwargs):
+        if self.pk is None and self.loan_limit == 0:
+         self.loan_limit = self.total_loan
+
+        self.loan_outstanding = self.total_loan - self.total_paid
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return self.account_number
+    
+
+class Installment(BaseModelMixin):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="installments")
+    due_date = models.DateField()
+    paid_date = models.DateField()
+    total_due = models.DecimalField(max_digits=10, decimal_places=2)
+    over_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    total_outstanding = models.DecimalField(max_digits=10, decimal_places=2)
+
+    
+ 
 
 class Company(BaseModelMixin):
 
@@ -61,8 +83,8 @@ class Company(BaseModelMixin):
 
     # Choices for lone taker type
     LONE_TAKER_TYPE_CHOICES = [
-        (LONE_TAKER_PERSON, "Personal"),
-        (LONE_TAKER_COMPANY, "Company"),
+        (LONE_TAKER_PERSON, LONE_TAKER_PERSON.capitalize()),
+        (LONE_TAKER_COMPANY, LONE_TAKER_COMPANY.capitalize()),
     ]
 
     name = models.CharField(max_length=255)
@@ -107,12 +129,49 @@ class LoanApplication(BaseModelMixin):
     STATUS_REJECTED = "rejected"
 
     STATUS_CHOICES = [
-        (STATUS_PENDING, "Pending"),
-        (STATUS_APPROVED, "Approved"),
-        (STATUS_REJECTED, "Rejected"),
+        (STATUS_PENDING, STATUS_PENDING.capitalize()),
+        (STATUS_APPROVED, STATUS_APPROVED.capitalize()),
+        (STATUS_REJECTED, STATUS_REJECTED.capitalize()),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loan_applications")
     loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
     finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="loan_applications")
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
+
+
+
+class SecurityDeposit(BaseModelMixin):
+    TYPE_REAL_ESTATE = "real state"
+    TYPE_FIXED_ASSET = "fixed asset"
+    TYPE_HIGHER_PURCHASE = "higher purchase"
+
+    TYPE_CHOICES = [
+        (TYPE_REAL_ESTATE, TYPE_REAL_ESTATE.capitalize()),
+        (TYPE_FIXED_ASSET, TYPE_FIXED_ASSET.capitalize()),
+        (TYPE_HIGHER_PURCHASE, TYPE_HIGHER_PURCHASE.capitalize()),
+    ]
+
+    OWNERSHIP_OWN = "own"
+    OWNERSHIP_THIRD_PARTY = "third party"
+
+    OWNERSHIP_CHOICES = [
+        (OWNERSHIP_OWN, OWNERSHIP_OWN.capitalize()),
+        (OWNERSHIP_THIRD_PARTY, OWNERSHIP_THIRD_PARTY.capitalize()),
+    ]
+
+    NATURE_FIRST_CHARGE = "first_charge"
+
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="securities")
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_REAL_ESTATE)
+    description = models.TextField()
+    ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES, default=OWNERSHIP_OWN)
+    coverage_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    nature_of_charge = models.CharField(max_length=20, default=NATURE_FIRST_CHARGE, editable=False)
+    latest_value = models.DecimalField(max_digits=15, decimal_places=2)
+    latest_valuation_date = models.DateField()
+
+    def __str__(self):
+        return self.description
+
+
