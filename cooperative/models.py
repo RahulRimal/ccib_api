@@ -20,9 +20,10 @@ class Loan(BaseModelMixin):
     STATUS_GOOD = "good"
     STATUS_WATCHLIST = "watchlist"
     STATUS_PASS = "pass"
+    # npl = non_performing_loan
     STATUS_NPL = "npl"
     STATUS_DOUBTFUL = "doubtful"
-    STATUS_BAD_DEBT = "bad Debt"
+    STATUS_BAD_DEBT = "bad debt"
 
     STATUS_CHOICES = [
         (STATUS_GOOD, STATUS_GOOD.capitalize()),
@@ -128,9 +129,9 @@ class LoanApplication(BaseModelMixin):
     STATUS_REJECTED = "rejected"
 
     STATUS_CHOICES = [
-        (STATUS_PENDING, "Pending"),
-        (STATUS_APPROVED, "Approved"),
-        (STATUS_REJECTED, "Rejected"),
+        (STATUS_PENDING, STATUS_PENDING.capitalize()),
+        (STATUS_APPROVED, STATUS_APPROVED.capitalize()),
+        (STATUS_REJECTED, STATUS_REJECTED.capitalize()),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loan_applications")
