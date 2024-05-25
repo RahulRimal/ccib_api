@@ -8,7 +8,7 @@ from common.models import BaseModelMixin
 class PersonalGuarantor(BaseModelMixin):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     loan = models.ForeignKey(
-        "Loan", on_delete=models.CASCADE, related_name="personal_guarantors"
+        "LoanAccount", on_delete=models.CASCADE, related_name="personal_guarantors"
     )
 
     def __str__(self):
@@ -16,7 +16,7 @@ class PersonalGuarantor(BaseModelMixin):
 
 
 
-class Loan(BaseModelMixin):
+class LoanAccount(BaseModelMixin):
     STATUS_GOOD = "good"
     STATUS_WATCHLIST = "watchlist"
     STATUS_PASS = "pass"
@@ -42,6 +42,7 @@ class Loan(BaseModelMixin):
         (NATURE_OVERDRAFT, NATURE_OVERDRAFT.capitalize()),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
+    finance = models.ForeignKey("Finance", on_delete=models.CASCADE, related_name="loans")
     account_number = models.CharField(max_length=20, unique=True)
     total_loan = models.DecimalField(max_digits=10, decimal_places=2)
     total_paid = models.DecimalField(max_digits=10, decimal_places=2)
@@ -66,7 +67,7 @@ class Loan(BaseModelMixin):
     
 
 class Installment(BaseModelMixin):
-    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="installments")
+    loan = models.ForeignKey(LoanAccount, on_delete=models.CASCADE, related_name="installments")
     due_date = models.DateField()
     paid_date = models.DateField()
     total_due = models.DecimalField(max_digits=10, decimal_places=2)
@@ -162,7 +163,7 @@ class SecurityDeposit(BaseModelMixin):
 
     NATURE_FIRST_CHARGE = "first_charge"
 
-    loan = models.ForeignKey(Loan, on_delete=models.CASCADE, related_name="securities")
+    loan = models.ForeignKey(LoanAccount, on_delete=models.CASCADE, related_name="securities")
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_REAL_ESTATE)
     description = models.TextField()
     ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES, default=OWNERSHIP_OWN)
@@ -175,3 +176,53 @@ class SecurityDeposit(BaseModelMixin):
         return self.description
 
 
+
+
+class Blacklist(BaseModelMixin):
+    CATEGORY_BORROWER = "borrower"
+    CATEGORY_GUARANTOR = "guarantor"
+
+    CATEGORY_CHOICES = [
+        (CATEGORY_BORROWER, CATEGORY_BORROWER.capitalize()),
+        (CATEGORY_GUARANTOR, CATEGORY_GUARANTOR.capitalize()),
+    ]
+
+    STATUS_BLACKLISTED = "blacklisted"
+    STATUS_RELISHED = "relished"
+
+    STATUS_CHOICES = [
+        (STATUS_BLACKLISTED, STATUS_BLACKLISTED.capitalize()),
+        (STATUS_RELISHED, STATUS_RELISHED.capitalize()),
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="black_list")
+    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="black_list")
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default=CATEGORY_BORROWER)
+    reason = models.CharField(max_length=500)
+    remarks = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_BLACKLISTED)
+    release_date = models.DateField(null= True, blank=True)
+    report_date = models.DateField()
+
+
+class BlacklistReport(BaseModelMixin):
+    STATUS_PROGRESS = "progress"
+    STATUS_REJECTED = "rejected"
+    STATUS_APPROVED = "approved"
+
+    STATUS_CHOICES = [
+        (STATUS_PROGRESS, STATUS_PROGRESS.capitalize()),
+        (STATUS_REJECTED, STATUS_REJECTED.capitalize()),
+        (STATUS_APPROVED, STATUS_APPROVED.capitalize()),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="black_list_reports")
+    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="black_list_reports")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PROGRESS)
+
+
+
+class Inquiry(BaseModelMixin):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="inquiries")
+    reason = models.CharField(max_length=500)
+    inquirer = models.ForeignKey(User, on_delete=models.PROTECT, related_name="inquiries")

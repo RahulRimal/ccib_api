@@ -8,7 +8,7 @@ from cooperative.models import (
     Company,
     Finance,
     Installment,
-    Loan,
+    LoanAccount,
     LoanApplication,
     PersonalGuarantor,
     SecurityDeposit,
@@ -39,8 +39,8 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
         try:
-            loan = Loan.objects.get(idx=loan_idx)
-        except Loan.DoesNotExist:
+            loan = LoanAccount.objects.get(idx=loan_idx)
+        except LoanAccount.DoesNotExist:
             raise serializers.ValidationError("Loan does not exist")
         validated_data["loan"] = loan
         return super().create(validated_data)
@@ -74,13 +74,15 @@ class FinanceSerializer(BaseModelSerializerMixin):
         fields = ["idx", "name", "description", "location"]
 
 
-class LoanSerializer(BaseModelSerializerMixin):
+class LoanAccountSerializer(BaseModelSerializerMixin):
     user = UserSerializer(read_only=True)
+    finance = FinanceSerializer(read_only=True)
     class Meta:
-        model = Loan
+        model = LoanAccount
         fields = [
             "idx",
             "user",
+            "finance",
             "account_number",
             "total_loan",
             "total_paid",
@@ -93,15 +95,19 @@ class LoanSerializer(BaseModelSerializerMixin):
             "is_closed",
         ]
 
-class CreateLoanSerializer(BaseModelSerializerMixin):
+class CreateLoanAccountSerializer(BaseModelSerializerMixin):
     user_idx = serializers.CharField(write_only=True)
     user = UserSerializer(read_only=True)
+    finance = FinanceSerializer(read_only=True)
+    finance_idx = serializers.CharField(write_only=True)
     class Meta:
-        model = Loan
+        model = LoanAccount
         fields = [
             "idx",
             "user",
             "user_idx",
+            "finance",
+            "finance_idx",
             "account_number",
             "total_loan",
             "total_paid",
@@ -120,14 +126,19 @@ class CreateLoanSerializer(BaseModelSerializerMixin):
             validated_data["user"] = user
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
+        try:
+            finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
+            validated_data["finance"] = finance
+        except Finance.DoesNotExist:
+            raise serializers.ValidationError("Finance does not exist")
         return super().create(validated_data)
         
 
-class UpdateLoanSerializer(BaseModelSerializerMixin):
+class UpdateLoanAccountSerializer(BaseModelSerializerMixin):
     user = UserSerializer(read_only=True)
 
     class Meta:
-        model = Loan
+        model = LoanAccount
         fields = [
             "idx",
             "user",
@@ -145,7 +156,7 @@ class UpdateLoanSerializer(BaseModelSerializerMixin):
     
 
 class InstallmentSerializer(BaseModelSerializerMixin):
-    loan = LoanSerializer(read_only=True)
+    loan = LoanAccountSerializer(read_only=True)
     class Meta:
         model = Installment
         fields = [
@@ -160,7 +171,7 @@ class InstallmentSerializer(BaseModelSerializerMixin):
 
 class CreateInstallmentSerializer(BaseModelSerializerMixin):
     loan_idx = serializers.CharField(write_only=True)
-    loan = LoanSerializer(read_only=True)
+    loan = LoanAccountSerializer(read_only=True)
     class Meta:
         model = Installment
         fields = [
@@ -176,9 +187,9 @@ class CreateInstallmentSerializer(BaseModelSerializerMixin):
     
     def create(self, validated_data):
         try:
-            loan = Loan.objects.get(idx=validated_data.pop("loan_idx"))
+            loan = LoanAccount.objects.get(idx=validated_data.pop("loan_idx"))
             validated_data["loan"] = loan
-        except Loan.DoesNotExist:
+        except LoanAccount.DoesNotExist:
             raise serializers.ValidationError("Loan does not exist")
         return super().create(validated_data)
 
@@ -400,7 +411,7 @@ class UpdateCompanySerializer(BaseModelSerializerMixin):
 
 
 class SecurityDepositSerializer(BaseModelSerializerMixin):
-    loan = LoanSerializer(read_only=True)
+    loan = LoanAccountSerializer(read_only=True)
     class Meta:
         model = SecurityDeposit
         fields = [
@@ -417,7 +428,7 @@ class SecurityDepositSerializer(BaseModelSerializerMixin):
 
 
 class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
-    loan = LoanSerializer(read_only=True)
+    loan = LoanAccountSerializer(read_only=True)
     loan_idx = serializers.CharField(write_only=True)
     class Meta:
         model = SecurityDeposit
@@ -435,7 +446,7 @@ class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
         ]
     
     def create(self, validated_data):
-        loan = Loan.objects.get(idx=validated_data.pop("loan_idx"))
+        loan = LoanAccount.objects.get(idx=validated_data.pop("loan_idx"))
         validated_data["loan"] = loan
         security = SecurityDeposit.objects.create(**validated_data)
         return security
