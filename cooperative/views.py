@@ -1,4 +1,8 @@
+from django.utils import timezone
+from django.db.models import F, Max, Min
+
 from rest_framework.viewsets import ModelViewSet
+
 from rest_framework.views import APIView
 from rest_framework.decorators import action
 
@@ -8,8 +12,10 @@ from common.api_response import api_response_success
 from common.mixins import BaseApiMixin
 from cooperative.models import (
     Blacklist,
+    BlacklistReport,
     Company,
     Finance,
+    Inquiry,
     Installment,
     LoanAccount,
     LoanApplication,
@@ -18,14 +24,20 @@ from cooperative.models import (
 )
 
 from cooperative.serializers import (
+    BlacklistReportSerializer,
+    BlacklistSerializer,
     CompanySerializer,
+    CreateBlacklistReportSerializer,
+    CreateBlacklistSerializer,
     CreateCompanySerializer,
+    CreateInquirySerializer,
     CreateInstallmentSerializer,
     CreateLoanAccountSerializer,
     CreateLoanApplicationSerializer,
     CreatePersonalGuarantorSerializer,
     CreateSecurityDepositSerializer,
     FinanceSerializer,
+    InquirySerializer,
     InstallmentSerializer,
     LoanApplicationSerializer,
     LoanAccountSerializer,
@@ -120,12 +132,46 @@ class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
         return SecurityDepositSerializer
 
 
+class BlacklistViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Blacklist.objects.all()
+    # serializer_class = BlacklistSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateBlacklistSerializer
+        return BlacklistSerializer
+
+
+class BlacklistReportViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = BlacklistReport.objects.all()
+    # serializer_class = BlacklistReportSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateBlacklistReportSerializer
+        return BlacklistReportSerializer
+
+
+class InquiryViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Inquiry.objects.all()
+    # serializer_class = BlacklistSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateInquirySerializer
+        return InquirySerializer
+
+
 class ReportView(BaseApiMixin, APIView):
 
     # @action(detail=False, methods = ['GET'])
     # def summary(self, request):
     def get(self, request):
         user = User.objects.last()
+
         blacklist = Blacklist.objects.filter(user=user).first()
         user_loan_accounts = LoanAccount.objects.all()
 
@@ -137,6 +183,7 @@ class ReportView(BaseApiMixin, APIView):
                     loan_account_item["total_amount"] += loan_account.total_loan
                     loan_account_item["outstanding"] += loan_account.loan_outstanding
                     loan_account_item["overdue_amount"] += loan_account.overdue_amount
+                    loan_account_item["total_account"] += 1
                     break
             else:
                 loan_accounts_list.append(
@@ -145,8 +192,43 @@ class ReportView(BaseApiMixin, APIView):
                         "total_amount": loan_account.total_loan,
                         "outstanding": loan_account.loan_outstanding,
                         "overdue_amount": loan_account.overdue_amount,
+                        "total_account": 1
                     }
                 )
+
+        installment = (
+            Installment.objects.all()
+            .annotate(due_days=F("paid_date") - F("due_date"))
+            .aggregate(max_days=Max("due_days"), min_days=Min("due_days"))
+        )
+
+        total_due_installment = Installment.objects.filter(
+            due_date__lt=timezone.now(), total_paid=0
+        ).count()
+
+        loan_utilization = LoanAccount.objects.all().aggregate(
+            Max("utilization_percent"), Min("utilization_percent")
+        )
+
+        total_installments = Installment.objects.all()
+
+        # user_account_list =[]
+
+        # for user_account in user_loan_accounts:
+        #     user_account_list.append(
+        #         {
+        #             "number_of_account": user_account.account_number,
+        #             "type_of_loan": user_account.loan_type,
+        #             "finance_name": user_account.finance.name,
+        #             "outstanding_balance": user_account.loan_outstanding,
+        #             "utilization_percent_creadit": user_account.utilization_percent,
+        #             "amount_overdue": user_account.total_loan - user_account.total_paid
+
+
+                    
+
+        #         }
+        #     )
 
         return_data = {}
         return_data["quick_report"] = {
@@ -246,7 +328,7 @@ class ReportView(BaseApiMixin, APIView):
             return_data["blacklist_history"] = {
                 "blacklist_id": blacklist.id,
                 "status": blacklist.status,
-                "finance": blacklist.finance,
+                "finance": blacklist.finance.name,
                 "reason": blacklist.reason,
                 "category": blacklist.category,
                 "release_date": blacklist.release_date,
@@ -255,5 +337,24 @@ class ReportView(BaseApiMixin, APIView):
             }
 
         return_data["user_accounts"] = loan_accounts_list
+
+        return_data["credit_prpfile_overview"] = {
+            "max_due_days": installment.get("max_days").days or 0,
+            "min_due_day": installment.get("min_days").days or 0,
+            "toal_due_installment": total_due_installment,
+            "max_utilization_percent": loan_utilization.get("utilization_percent__max"),
+            "min_utilization_percent": loan_utilization.get("utilization_percent__min"),
+        }
+
+        return_data["credit_prpfile_summary"] = [
+            {
+                "date": installment.created_at,
+                "installment_paid": installment.total_paid,
+                "amount_overdue": installment.total_due - installment.total_paid,
+            }
+            for installment in total_installments
+        ]
+
+        # return_data["user_accounts_type"] = user_account_list
 
         return api_response_success(return_data)

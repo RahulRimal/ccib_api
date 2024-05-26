@@ -5,8 +5,11 @@ from autho.serializers import UserSerializer
 from common.helpers import generate_username
 from common.mixins import BaseModelSerializerMixin
 from cooperative.models import (
+    Blacklist,
+    BlacklistReport,
     Company,
     Finance,
+    Inquiry,
     Installment,
     LoanAccount,
     LoanApplication,
@@ -93,6 +96,7 @@ class LoanAccountSerializer(BaseModelSerializerMixin):
             "status",
             "loan_type",
             "is_closed",
+            "utilization_percent"
         ]
 
 class CreateLoanAccountSerializer(BaseModelSerializerMixin):
@@ -118,6 +122,8 @@ class CreateLoanAccountSerializer(BaseModelSerializerMixin):
             "status",
             "loan_type",
             "is_closed",
+            "utilization_percent"
+
         ]
 
     def create(self, validated_data):
@@ -152,6 +158,8 @@ class UpdateLoanAccountSerializer(BaseModelSerializerMixin):
             "status",
             "loan_type",
             "is_closed",
+            "utilization_percent"
+
         ]
     
 
@@ -165,7 +173,7 @@ class InstallmentSerializer(BaseModelSerializerMixin):
             "due_date",
             "paid_date",
             "total_due",
-            "over_paid",
+            "total_paid",
             "total_outstanding",
         ]
 
@@ -181,7 +189,7 @@ class CreateInstallmentSerializer(BaseModelSerializerMixin):
             "due_date",
             "paid_date",
             "total_due",
-            "over_paid",
+            "total_paid",
             "total_outstanding",
         ]
     
@@ -450,3 +458,130 @@ class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
         validated_data["loan"] = loan
         security = SecurityDeposit.objects.create(**validated_data)
         return security
+
+
+class BlacklistSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+    finance = FinanceSerializer(read_only=True)
+    class Meta:
+        model = Blacklist
+        fields = [
+            "idx",
+            "user",
+            "finance",
+            "category",
+            "reason",
+            "remarks",
+            "status",
+            "release_date",
+            "report_date",
+        ]
+
+
+class CreateBlacklistSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+    user_idx = serializers.CharField(write_only=True)
+    finance = FinanceSerializer(read_only=True)
+    finance_idx = serializers.CharField(write_only=True)
+    class Meta:
+        model = Blacklist
+        fields = [
+            "idx",
+            "user",
+            "user_idx",
+            "finance",
+            "finance_idx",
+            "category",
+            "reason",
+            "remarks",
+            "status",
+            "release_date",
+            "report_date",
+        ]
+    
+    def create(self, validated_data):
+        user = User.objects.get(idx=validated_data.pop("user_idx"))
+        validated_data["user"] = user
+        finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
+        validated_data["finance"] = finance
+        blacklist = Blacklist.objects.create(**validated_data)
+        return blacklist
+
+
+class BlacklistReportSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+    finance = FinanceSerializer(read_only=True)
+    class Meta:
+        model = BlacklistReport
+        fields = [
+            "idx",
+            "user",
+            "finance",
+            "status",
+        ]
+
+
+class CreateBlacklistReportSerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+    user_idx = serializers.CharField(write_only=True)
+    finance = FinanceSerializer(read_only=True)
+    finance_idx = serializers.CharField(write_only=True)
+    class Meta:
+        model = BlacklistReport
+        fields = [
+            "idx",
+            "user",
+            "user_idx",
+            "finance",
+            "finance_idx",
+            "status",
+        ]
+    
+    def create(self, validated_data):
+        user = User.objects.get(idx=validated_data.pop("user_idx"))
+        validated_data["user"] = user
+        finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
+        validated_data["finance"] = finance
+        blacklist = BlacklistReport.objects.create(**validated_data)
+        return blacklist
+
+class InquirySerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+    finance = FinanceSerializer(read_only=True)
+    class Meta:
+        model = Inquiry
+        fields = [
+            "idx",
+            "user",
+            "finance",
+            "reason",
+            "inquirer",
+        ]
+
+
+class CreateInquirySerializer(BaseModelSerializerMixin):
+    user = UserSerializer(read_only=True)
+    user_idx = serializers.CharField(write_only=True)
+    finance = FinanceSerializer(read_only=True)
+    finance_idx = serializers.CharField(write_only=True)
+    inquirer = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    
+    class Meta:
+        model = Inquiry
+        fields = [
+            "idx",
+            "user",
+            "user_idx",
+            "finance",
+            "finance_idx",
+            "reason",
+            "inquirer",
+        ]
+    
+    def create(self, validated_data):
+        user = User.objects.get(idx=validated_data.pop("user_idx"))
+        validated_data["user"] = user
+        finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
+        validated_data["finance"] = finance
+        inquiry = Inquiry.objects.create(**validated_data)
+        return inquiry

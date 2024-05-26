@@ -53,6 +53,7 @@ class LoanAccount(BaseModelMixin):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_GOOD)
     loan_type = models.CharField(max_length=20, choices=NATURE_CHOICES, default=NATURE_TERM)
     is_closed = models.BooleanField(default=False)
+    utilization_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.pk is None and self.loan_limit == 0:
@@ -71,7 +72,7 @@ class Installment(BaseModelMixin):
     due_date = models.DateField()
     paid_date = models.DateField()
     total_due = models.DecimalField(max_digits=10, decimal_places=2)
-    over_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    total_paid = models.DecimalField(max_digits=10, decimal_places=2)
     total_outstanding = models.DecimalField(max_digits=10, decimal_places=2)
 
     
