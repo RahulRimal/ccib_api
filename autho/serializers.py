@@ -25,6 +25,9 @@ class UserSerializer(BaseModelSerializerMixin):
             "mother_name",
             "grandfather_name",
             "phone_number",
+            "gender",
+            "permanent_address",
+            "temporary_address",
         ]
 
     def create(self, validated_data):
