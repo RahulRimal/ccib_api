@@ -1,9 +1,13 @@
+from collections import defaultdict
+from datetime import timedelta, datetime
 from django.utils import timezone
+from django.utils.timezone import now
 from django.db.models import F, Max, Min
 
 from rest_framework.viewsets import ModelViewSet
 
 from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
 from rest_framework.decorators import action
 
 
@@ -358,3 +362,47 @@ class ReportView(BaseApiMixin, APIView):
         # return_data["user_accounts_type"] = user_account_list
 
         return api_response_success(return_data)
+
+
+
+class DashboardViewSet(BaseApiMixin, ViewSet):
+
+    @action(detail=False, methods=["GET"])
+    def quick_summary(self, request):
+        finance = Finance.objects.filter(idx=request.query_params.get('finance_idx')).first()
+        total_users = User.objects.count()
+        
+        total_active_loans = LoanAccount.objects.filter(status="active", finance=finance).count()
+        
+        data = {
+            'total_users': total_users,
+            'total_active_loans': total_active_loans
+        }
+
+        return api_response_success(data)
+
+    @action(detail=False, methods=["GET"])
+    def income_overview(self, request):
+        one_year_ago = datetime.now().date() - timedelta(days=365)
+        installments = Installment.objects.filter(due_date__lte=one_year_ago)
+        
+
+        monthly_data = defaultdict(lambda: {'total_due': 0, 'total_paid': 0})
+
+
+        for installment in installments:
+            month = installment.due_date.strftime('%Y-%m')
+            monthly_data[month]['total_due'] += installment.total_due
+            monthly_data[month]['total_paid'] += installment.total_paid
+
+        sorted_monthly_data = dict(sorted(monthly_data.items()))
+
+        response_data = []
+        for month, data in sorted_monthly_data.items():  
+            response_data.append({
+                "date": month + "-01",  
+                "total_due": data['total_due'],
+                "total_paid": data['total_paid'],
+            })
+
+        return api_response_success(response_data)

@@ -1,6 +1,5 @@
 from django.urls import path
-from. import views
-
+from. import views 
 from rest_framework_nested.routers import DefaultRouter, NestedDefaultRouter
 
 router = DefaultRouter()
@@ -15,11 +14,11 @@ router.register('inquiries', views.InquiryViewSet, basename='inquiries')
 router.register('blacklists', views.BlacklistViewSet, basename='blacklists')
 router.register('blacklistreports', views.BlacklistReportViewSet, basename='blacklistreports')
 # router.register('reports', views.ReportViewSet, basename='reports')
+router.register('dashboard',views.DashboardViewSet, basename='dashboard')
 
 loan_router = NestedDefaultRouter(router, 'loans', lookup='loan')
 
 loan_router.register('guarantors', views.PersonalGuarantorViewSet, basename='loan-guarantors')
-
 
 urlpatterns = [
     path("report", views.ReportView.as_view(), name="report"),
