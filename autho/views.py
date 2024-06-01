@@ -1,6 +1,7 @@
 from django.http import HttpRequest
 
 from autho.models import User
+from django.db.models import Count
 
 from rest_framework.decorators import action
 from rest_framework import status
@@ -11,6 +12,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from common.api_response import api_response_error, api_response_success
 from common.mixins import BaseApiMixin
 from autho.serializers import UserSerializer
+from cooperative.models import LoanAccount
 
 # Create your views here.
 
@@ -58,6 +60,71 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
                 {"detail": "Old password is incorrect."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+    
+
+    @action(detail=False, methods=["GET"])
+    def user_account_summary(self, request):
+
+        user_loan_accounts = LoanAccount.objects.all()
+
+        loan_accounts_list = []
+        for loan_account in user_loan_accounts:
+            finance_name = loan_account.finance.name
+            for loan_account_item in loan_accounts_list:
+                if loan_account_item["finance_name"] == finance_name:
+                    loan_account_item["total_amount"] += loan_account.total_loan
+                    loan_account_item["outstanding"] += loan_account.loan_outstanding
+                    loan_account_item["overdue_amount"] += loan_account.overdue_amount
+                    loan_account_item["total_account"] += 1
+                    break
+            else:
+                loan_accounts_list.append(
+                    {
+                        "finance_name": finance_name,
+                        "total_amount": loan_account.total_loan,
+                        "outstanding": loan_account.loan_outstanding,
+                        "overdue_amount": loan_account.overdue_amount,
+                        "total_account": 1
+                    }
+                )
+
+        return api_response_success(loan_accounts_list)
+    
+
+    @action(detail=False, methods=["GET"])
+    def user_loan_type(self, request):
+        user_idx = request.query_params.get('user')
+        if not user_idx:
+            return api_response_error("User ID is required", status=400)
+        
+        type_counts = LoanAccount.objects.filter(user__idx=user_idx).values('loan_type').annotate(count=Count('loan_type'))
+        
+        results = {loan_type: 0 for loan_type, _ in LoanAccount.NATURE_CHOICES}
+
+        for type_count in type_counts:
+            results[type_count['loan_type']] = type_count['count']
+        
+        return api_response_success(results)
+    
+    @action(detail=False, methods=["GET"])
+    def user_account(self, request):
+        user_loan_accounts = LoanAccount.objects.all()  # Adjust the query as needed
+
+        user_account_list = [
+            {
+                "user_idx": user_account.user.idx,  # Assuming user is a ForeignKey field in UserLoanAccount
+                "user_username": user_account.user.username,  # Assuming username is a field in the User model
+                "number_of_account": user_account.account_number,
+                "type_of_loan": user_account.loan_type,
+                "finance_name": user_account.finance.name,
+                "outstanding_balance": user_account.loan_outstanding,
+                "utilization_percent_credit": user_account.utilization_percent,
+                "amount_overdue": user_account.total_loan - user_account.total_paid
+            }
+            for user_account in user_loan_accounts
+        ]
+
+        return api_response_success(user_account_list)
 
   
 
