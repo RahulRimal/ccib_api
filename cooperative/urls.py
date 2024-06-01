@@ -14,7 +14,6 @@ router.register('inquiries', views.InquiryViewSet, basename='inquiries')
 router.register('blacklists', views.BlacklistViewSet, basename='blacklists')
 router.register('blacklistreports', views.BlacklistReportViewSet, basename='blacklistreports')
 # router.register('reports', views.ReportViewSet, basename='reports')
-router.register('dashboard',views.DashboardViewSet, basename='dashboard')
 
 loan_router = NestedDefaultRouter(router, 'loans', lookup='loan')
 
