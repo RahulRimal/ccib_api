@@ -19,6 +19,7 @@ from cooperative.models import (
     BlacklistReport,
     Company,
     Finance,
+    FinanceStaff,
     Inquiry,
     Installment,
     LoanAccount,
@@ -31,24 +32,16 @@ from cooperative.serializers import (
     BlacklistReportSerializer,
     BlacklistSerializer,
     CompanySerializer,
-    CreateBlacklistReportSerializer,
-    CreateBlacklistSerializer,
-    CreateCompanySerializer,
-    CreateInquirySerializer,
-    CreateInstallmentSerializer,
-    CreateLoanAccountSerializer,
     CreateLoanApplicationSerializer,
     CreatePersonalGuarantorSerializer,
-    CreateSecurityDepositSerializer,
     FinanceSerializer,
+    FinanceStaffSerializer,
     InquirySerializer,
     InstallmentSerializer,
     LoanApplicationSerializer,
     LoanAccountSerializer,
     PersonalGuarantorSerializer,
     SecurityDepositSerializer,
-    UpdateCompanySerializer,
-    UpdateLoanAccountSerializer,
     UpdateLoanApplicationSerializer,
 )
 
@@ -72,14 +65,9 @@ class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
 class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanAccount.objects.all()
+    serializer_class = LoanAccountSerializer
     filterset_fields = ["status", "user", "account_number", "loan_type"]
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateLoanAccountSerializer
-        if self.request.method == "PATCH":
-            return UpdateLoanAccountSerializer
-        return LoanAccountSerializer
 
     @action(detail=False, methods=["GET"])
     def loan_status_overview(self, request):
@@ -111,15 +99,10 @@ class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
 class CompanyViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Company.objects.all()
+    serializer_class = CompanySerializer
     filterset_fields = ["name", "pan_num", "vat_num"]
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateCompanySerializer
-        if self.request.method == "PATCH":
-            return UpdateCompanySerializer
-        return CompanySerializer
-
+ 
 
 class FinanceViewSet(BaseApiMixin, ModelViewSet):
     queryset = Finance.objects.all()
@@ -215,16 +198,19 @@ class FinanceViewSet(BaseApiMixin, ModelViewSet):
         return api_response_success(response_data)
 
 
+class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = FinanceStaff.objects.all()
+    serializer_class = FinanceStaffSerializer
+    filterset_fields = [ "finance"]
+
 class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Installment.objects.all()
+    serializer_class = InstallmentSerializer
     filterset_fields = ["loan", "due_date", "total_outstanding"]
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateInstallmentSerializer
-        return InstallmentSerializer
-
+  
     @action(detail=False, methods=["GET"])
     def credit_profile_summary(self, request):
         user_idx = request.query_params.get("user")
@@ -288,47 +274,31 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = SecurityDeposit.objects.all()
+    serializer_class = SecurityDepositSerializer
     filterset_fields = ["loan", "type", "ownership_type"]
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateSecurityDepositSerializer
-        return SecurityDepositSerializer
 
 
 class BlacklistViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Blacklist.objects.all()
     filterset_fields = ["user__idx"]
-    # serializer_class = BlacklistSerializer
+    serializer_class = BlacklistSerializer
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateBlacklistSerializer
-        return BlacklistSerializer
 
 
 class BlacklistReportViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = BlacklistReport.objects.all()
-    # serializer_class = BlacklistReportSerializer
+    serializer_class = BlacklistReportSerializer
 
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateBlacklistReportSerializer
-        return BlacklistReportSerializer
+ 
 
 
 class InquiryViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Inquiry.objects.all()
     filterset_fields = ["user"]
-    # serializer_class = BlacklistSerializer
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateInquirySerializer
-        return InquirySerializer
+    serializer_class = BlacklistSerializer
 
 
 class ReportView(BaseApiMixin, APIView):

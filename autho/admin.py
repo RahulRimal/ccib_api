@@ -9,7 +9,6 @@ from autho.models import User
 class UserAdmin(admin.ModelAdmin):
     list_display = [
         "idx",
-        "username",
         "first_name",
         "last_name",
         "dob",

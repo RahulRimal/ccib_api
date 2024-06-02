@@ -9,6 +9,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import serializers
 
+from django.utils.translation import gettext_lazy as _
+
 class IDXOnlyObject:
 	def __init__(self, idx):
 		self.idx = idx
@@ -57,7 +59,9 @@ class BaseModelSerializerMixin(serializers.ModelSerializer):
     serializer_related_field = IdxRelatedField
     idx = ShortUUIDField()
 
+
     class Meta:
+        serializers = {}
 
         exclude = ("id", "modified_at", "is_obsolete")
         extra_kwargs = {
@@ -72,9 +76,13 @@ class BaseModelSerializerMixin(serializers.ModelSerializer):
                 related_instance = getattr(instance, field_name)
                 if not related_instance:
                     continue
-                representation[field_name] = getattr(
-                    related_instance, "idx", related_instance.id
-                )
+                if hasattr(self.Meta, "serializers") and self.Meta.serializers.get(field_name):
+                    serializer = self.Meta.serializers.get(field_name)
+                    representation[field_name] = serializer(related_instance).data
+                else:
+                    representation[field_name] = getattr(
+                        related_instance, "idx", related_instance.id
+                    )
             if isinstance(field, serializers.ManyRelatedField):
                 related_instances = getattr(instance, field_name).all()
                 representation[field_name] = [

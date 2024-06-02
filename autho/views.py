@@ -1,6 +1,6 @@
 from django.http import HttpRequest
 
-from autho.models import User
+from autho.models import StaffUser, User
 from django.db.models import Count
 
 from rest_framework.decorators import action
@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from common.api_response import api_response_error, api_response_success
 from common.mixins import BaseApiMixin
-from autho.serializers import UserSerializer
+from autho.serializers import StaffUserSerializer, UserSerializer
 from cooperative.models import LoanAccount
 
 # Create your views here.
@@ -113,7 +113,6 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
         user_account_list = [
             {
                 "user_idx": user_account.user.idx,  # Assuming user is a ForeignKey field in UserLoanAccount
-                "user_username": user_account.user.username,  # Assuming username is a field in the User model
                 "number_of_account": user_account.account_number,
                 "type_of_loan": user_account.loan_type,
                 "finance_name": user_account.finance.name,
@@ -126,7 +125,11 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
 
         return api_response_success(user_account_list)
 
-  
+
+class StaffUserViewSet(BaseApiMixin, ModelViewSet):
+    queryset = StaffUser.objects.all()
+    serializer_class = StaffUserSerializer
+
 
 class TokenObtainPairView(TokenObtainPairView):
     # permission_classes = ([BazraPermission])
