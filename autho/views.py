@@ -20,8 +20,7 @@ from cooperative.models import LoanAccount
 class UserViewSet(BaseApiMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    filterset_fields = ["first_name", "last_name", "phone_number", "loans__account_number"]
-
+    filterset_fields = ["first_name", "last_name", "phone_number", "loans__account_number", "loans__finance__idx"]
 
     @action(detail=False, methods = ['GET', 'PATCH'])
     def me(self, request):

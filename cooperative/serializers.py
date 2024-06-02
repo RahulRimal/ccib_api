@@ -87,14 +87,14 @@ class LoanAccountSerializer(BaseModelSerializerMixin):
             "user",
             "finance",
             "account_number",
-            "total_loan",
+            "loan_amount",
             "total_paid",
-            "loan_outstanding",
+            "total_outstanding",
             "loan_limit",
             "interest_rate",
             "overdue_amount",
             "status",
-            "loan_type",
+            "loan_nature",
             "is_closed",
             "utilization_percent"
         ]
@@ -113,16 +113,18 @@ class CreateLoanAccountSerializer(BaseModelSerializerMixin):
             "finance",
             "finance_idx",
             "account_number",
-            "total_loan",
+            "loan_amount",
             "total_paid",
-            "loan_outstanding",
+            "total_outstanding",
             "loan_limit",
             "interest_rate",
             "overdue_amount",
             "status",
-            "loan_type",
+            "loan_nature",
             "is_closed",
-            "utilization_percent"
+            "utilization_percent",
+            "installment_amount",
+            "maturity_date"
 
         ]
 

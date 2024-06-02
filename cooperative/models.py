@@ -15,7 +15,6 @@ class PersonalGuarantor(BaseModelMixin):
         return f"{self.user.first_name} {self.user.last_name}"
 
 
-
 class LoanAccount(BaseModelMixin):
     STATUS_GOOD = "good"
     STATUS_WATCHLIST = "watchlist"
@@ -41,42 +40,71 @@ class LoanAccount(BaseModelMixin):
         (NATURE_TERM, NATURE_TERM.capitalize()),
         (NATURE_OVERDRAFT, NATURE_OVERDRAFT.capitalize()),
     ]
+
+    INSTALLMENT_DUE_TYPE_DAILY = "daily"
+    INSTALLMENT_DUE_TYPE_WEEKLY = "weekly"
+    INSTALLMENT_DUE_TYPE_MONTHLY = "monthly"
+    INSTALLMENT_DUE_TYPE_YEARLY = "yearly"
+    INSTALLMENT_DUE_TYPE_CHOICES = [
+        (INSTALLMENT_DUE_TYPE_DAILY, INSTALLMENT_DUE_TYPE_DAILY.capitalize()),
+        (INSTALLMENT_DUE_TYPE_WEEKLY, INSTALLMENT_DUE_TYPE_WEEKLY.capitalize()),
+        (INSTALLMENT_DUE_TYPE_MONTHLY, INSTALLMENT_DUE_TYPE_MONTHLY.capitalize()),
+        (INSTALLMENT_DUE_TYPE_YEARLY, INSTALLMENT_DUE_TYPE_YEARLY.capitalize()),
+    ]
+
+    name = models.CharField(max_length=100)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
-    finance = models.ForeignKey("Finance", on_delete=models.CASCADE, related_name="loans")
+    finance = models.ForeignKey(
+        "Finance", on_delete=models.CASCADE, related_name="loans"
+    )
     account_number = models.CharField(max_length=20, unique=True)
-    total_loan = models.DecimalField(max_digits=10, decimal_places=2)
-    total_paid = models.DecimalField(max_digits=10, decimal_places=2)
-    loan_outstanding = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
     loan_limit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    installment_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    installment_due_type = models.CharField(
+        max_length=20,
+        choices=INSTALLMENT_DUE_TYPE_CHOICES,
+        default=INSTALLMENT_DUE_TYPE_DAILY,
+    )
+    total_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    total_outstanding = models.DecimalField(
+        max_digits=10, decimal_places=2, editable=False
+    )
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
     overdue_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_GOOD)
-    loan_type = models.CharField(max_length=20, choices=NATURE_CHOICES, default=NATURE_TERM)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_GOOD
+    )
+    loan_nature = models.CharField(
+        max_length=20, choices=NATURE_CHOICES, default=NATURE_TERM
+    )
     is_closed = models.BooleanField(default=False)
-    utilization_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    utilization_percent = models.DecimalField(
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
+    maturity_date = models.DateField()
 
     def save(self, *args, **kwargs):
         if self.pk is None and self.loan_limit == 0:
-         self.loan_limit = self.total_loan
+            self.loan_limit = self.loan_amount
 
-        self.loan_outstanding = self.total_loan - self.total_paid
+        self.total_outstanding = self.loan_amount - self.total_paid
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         return self.account_number
-    
+
 
 class Installment(BaseModelMixin):
-    loan = models.ForeignKey(LoanAccount, on_delete=models.CASCADE, related_name="installments")
+    loan = models.ForeignKey(
+        LoanAccount, on_delete=models.CASCADE, related_name="installments"
+    )
     due_date = models.DateField()
     paid_date = models.DateField()
     total_due = models.DecimalField(max_digits=10, decimal_places=2)
     total_paid = models.DecimalField(max_digits=10, decimal_places=2)
     total_outstanding = models.DecimalField(max_digits=10, decimal_places=2)
 
-    
- 
 
 class Company(BaseModelMixin):
 
@@ -102,7 +130,6 @@ class Company(BaseModelMixin):
 
     def __str__(self):
         return self.name
-    
 
     def has_read_permission(self):
         return True
@@ -136,11 +163,16 @@ class LoanApplication(BaseModelMixin):
         (STATUS_REJECTED, STATUS_REJECTED.capitalize()),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loan_applications")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="loan_applications"
+    )
     loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="loan_applications")
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
-
+    finance = models.ForeignKey(
+        Finance, on_delete=models.CASCADE, related_name="loan_applications"
+    )
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING
+    )
 
 
 class SecurityDeposit(BaseModelMixin):
@@ -164,19 +196,25 @@ class SecurityDeposit(BaseModelMixin):
 
     NATURE_FIRST_CHARGE = "first_charge"
 
-    loan = models.ForeignKey(LoanAccount, on_delete=models.CASCADE, related_name="securities")
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_REAL_ESTATE)
+    loan = models.ForeignKey(
+        LoanAccount, on_delete=models.CASCADE, related_name="securities"
+    )
+    type = models.CharField(
+        max_length=20, choices=TYPE_CHOICES, default=TYPE_REAL_ESTATE
+    )
     description = models.TextField()
-    ownership_type = models.CharField(max_length=20, choices=OWNERSHIP_CHOICES, default=OWNERSHIP_OWN)
+    ownership_type = models.CharField(
+        max_length=20, choices=OWNERSHIP_CHOICES, default=OWNERSHIP_OWN
+    )
     coverage_percentage = models.DecimalField(max_digits=5, decimal_places=2)
-    nature_of_charge = models.CharField(max_length=20, default=NATURE_FIRST_CHARGE, editable=False)
+    nature_of_charge = models.CharField(
+        max_length=20, default=NATURE_FIRST_CHARGE, editable=False
+    )
     latest_value = models.DecimalField(max_digits=15, decimal_places=2)
     latest_valuation_date = models.DateField()
 
     def __str__(self):
         return self.description
-
-
 
 
 class Blacklist(BaseModelMixin):
@@ -196,12 +234,18 @@ class Blacklist(BaseModelMixin):
         (STATUS_RELISHED, STATUS_RELISHED.capitalize()),
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="black_list")
-    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="black_list")
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default=CATEGORY_BORROWER)
+    finance = models.ForeignKey(
+        Finance, on_delete=models.CASCADE, related_name="black_list"
+    )
+    category = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES, default=CATEGORY_BORROWER
+    )
     reason = models.CharField(max_length=500)
     remarks = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_BLACKLISTED)
-    release_date = models.DateField(null= True, blank=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_BLACKLISTED
+    )
+    release_date = models.DateField(null=True, blank=True)
     report_date = models.DateField()
 
 
@@ -216,14 +260,23 @@ class BlacklistReport(BaseModelMixin):
         (STATUS_APPROVED, STATUS_APPROVED.capitalize()),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="black_list_reports")
-    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="black_list_reports")
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PROGRESS)
-
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="black_list_reports"
+    )
+    finance = models.ForeignKey(
+        Finance, on_delete=models.CASCADE, related_name="black_list_reports"
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_PROGRESS
+    )
 
 
 class Inquiry(BaseModelMixin):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="inquiries")
+    finance = models.ForeignKey(
+        Finance, on_delete=models.CASCADE, related_name="inquiries"
+    )
     reason = models.CharField(max_length=500)
-    inquirer = models.ForeignKey(User, on_delete=models.PROTECT, related_name="inquiries")
+    inquirer = models.ForeignKey(
+        User, on_delete=models.PROTECT, related_name="inquiries"
+    )
