@@ -1,15 +1,60 @@
 from shortuuidfield import ShortUUIDField
 from typing import Any, Dict
 
-from rest_framework.fields import get_attribute
+from rest_framework.fields import get_attribute, is_simple_callable
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import serializers
 
+class IDXOnlyObject:
+	def __init__(self, idx):
+		self.idx = idx
+
+	def __str__(self):
+		return "%s" % self.idx
+
+
+class IdxRelatedField(serializers.PrimaryKeyRelatedField):
+	default_error_messages = {
+		'required': _('This field is required.'),
+		'does_not_exist': _('Invalid idx "{pk_value}" - object does not exist.'),
+		'incorrect_type': _('Incorrect type. Expected idx value, received {data_type}.'),
+	}
+
+	def get_attribute(self, instance):
+		if self.use_pk_only_optimization() and self.source_attrs:
+			# Optimized case, return a mock object only containing the pk attribute.
+			try:
+				instance = get_attribute(instance, self.source_attrs[:-1])
+				value = instance.serializable_value(self.source_attrs[-1])
+				if is_simple_callable(value):
+					# Handle edge case where the relationship `source` argument
+					# points to a `get_relationship()` method on the model
+					value = value().idx
+				else:
+					value = getattr(instance, self.source_attrs[-1]).idx
+				return IDXOnlyObject(idx=value)
+			except AttributeError:
+				pass
+
+	def to_representation(self, obj):
+		return obj.idx
+
+	def to_internal_value(self, data):
+		try:
+			return self.queryset.get(idx=data)
+		except ObjectDoesNotExist:
+			self.fail('does_not_exist', pk_value=data)
+		except (TypeError, ValueError):
+			self.fail('incorrect_type', data_type=type(data).__name__)
+
+
 
 class BaseModelSerializerMixin(serializers.ModelSerializer):
+    serializer_related_field = IdxRelatedField
     idx = ShortUUIDField()
 
     class Meta:
@@ -127,3 +172,5 @@ class DetailRelatedField(serializers.RelatedField):
             return self.queryset.get(**{self.lookup: data})
         except ObjectDoesNotExist:
             raise serializers.ValidationError("Object does not exist")
+
+
