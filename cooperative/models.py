@@ -1,5 +1,5 @@
 from django.db import models
-from autho.models import User
+from autho.models import StaffUser, User
 
 from common.models import BaseModelMixin
 
@@ -144,11 +144,21 @@ class Shareholder(BaseModelMixin):
 
 class Finance(BaseModelMixin):
     name = models.CharField(max_length=100)
+    parent = models.ForeignKey("Finance", on_delete=models.CASCADE, blank=True, null=True)
     description = models.CharField(max_length=1000)
     location = models.JSONField(default=dict)
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=15)
+    website_url = models.URLField(blank=True, null=True)
+
 
     def __str__(self):
         return self.name
+
+
+class FinanceStaff(BaseModelMixin):
+    user = models.OneToOneField(StaffUser, on_delete=models.CASCADE, related_name="finance_staff")
+    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="staffs")    
 
 
 class LoanApplication(BaseModelMixin):

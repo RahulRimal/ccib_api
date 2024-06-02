@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from autho.models import User
-from autho.serializers import UserSerializer
+from autho.serializers import StaffUserSerializer, UserSerializer
 from common.helpers import generate_username
 from common.mixins import BaseModelSerializerMixin
 from cooperative.models import (
@@ -9,6 +9,7 @@ from cooperative.models import (
     BlacklistReport,
     Company,
     Finance,
+    FinanceStaff,
     Inquiry,
     Installment,
     LoanAccount,
@@ -74,12 +75,10 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
 class FinanceSerializer(BaseModelSerializerMixin):
     class Meta:
         model = Finance
-        fields = ["idx", "name", "description", "location"]
+        fields = ["idx", "name", "parent", "email",  "description", "location", "phone_number", "website_url"]
 
 
 class LoanAccountSerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    finance = FinanceSerializer(read_only=True)
     class Meta:
         model = LoanAccount
         fields = [
@@ -127,46 +126,14 @@ class CreateLoanAccountSerializer(BaseModelSerializerMixin):
             "maturity_date"
 
         ]
+        serializers = {
+            "user": UserSerializer,
+            "finance": FinanceSerializer
+        }
 
-    def create(self, validated_data):
-        try:
-            user = User.objects.get(idx=validated_data.pop("user_idx"))
-            validated_data["user"] = user
-        except User.DoesNotExist:
-            raise serializers.ValidationError("User does not exist")
-        try:
-            finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-            validated_data["finance"] = finance
-        except Finance.DoesNotExist:
-            raise serializers.ValidationError("Finance does not exist")
-        return super().create(validated_data)
-        
-
-class UpdateLoanAccountSerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = LoanAccount
-        fields = [
-            "idx",
-            "user",
-            "account_number",
-            "total_loan",
-            "total_paid",
-            "loan_outstanding",
-            "loan_limit",
-            "interest_rate",
-            "overdue_amount",
-            "status",
-            "loan_type",
-            "is_closed",
-            "utilization_percent"
-
-        ]
     
 
 class InstallmentSerializer(BaseModelSerializerMixin):
-    loan = LoanAccountSerializer(read_only=True)
     class Meta:
         model = Installment
         fields = [
@@ -179,71 +146,27 @@ class InstallmentSerializer(BaseModelSerializerMixin):
             "total_outstanding",
         ]
 
-class CreateInstallmentSerializer(BaseModelSerializerMixin):
-    loan_idx = serializers.CharField(write_only=True)
-    loan = LoanAccountSerializer(read_only=True)
-    class Meta:
-        model = Installment
-        fields = [
-            "idx",
-            "loan",
-            "loan_idx",
-            "due_date",
-            "paid_date",
-            "total_due",
-            "total_paid",
-            "total_outstanding",
-        ]
-    
-    def create(self, validated_data):
-        try:
-            loan = LoanAccount.objects.get(idx=validated_data.pop("loan_idx"))
-            validated_data["loan"] = loan
-        except LoanAccount.DoesNotExist:
-            raise serializers.ValidationError("Loan does not exist")
-        return super().create(validated_data)
-
+        serializers = {
+            "loan": LoanAccountSerializer
+        }
 
 class LoanApplicationSerializer(BaseModelSerializerMixin):
     user = UserSerializer()
-    finance = FinanceSerializer()
-    finance_idx = serializers.CharField(write_only=True)
 
     class Meta:
         model = LoanApplication
-        fields = ["idx", "user", "finance", "loan_amount", "status", "finance_idx"]
+        fields = ["idx", "user", "finance", "loan_amount", "status"]
 
-    def create(self, validated_data):
-        try:
-            finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-        except Finance.DoesNotExist:
-            raise serializers.ValidationError("Finance does not exist")
-        validated_data["finance"] = finance
-        try:
-            user = User.objects.get(
-                first_name=validated_data["first_name"],
-                middle_name=validated_data["middle_name"],
-                last_name=validated_data["last_name"],
-            )
-        except User.DoesNotExist:
-            data = validated_data
-            data.pop("loan_amount")
-            data["username"] = generate_username(
-                validated_data["first_name"], validated_data["last_name"]
-            )
-            user = User.objects.create(**data)
+        serializers = {
+            "user": UserSerializer,
+            "finance": FinanceSerializer
+        }
 
-        validated_data["user"] = user
-        loan_application = LoanApplication.objects.create(
-            finance=finance, user=user, loan_amount=validated_data["loan_amount"]
-        )
-        return loan_application
+  
 
 
 class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
     user = UserSerializer(read_only=True)
-    finance = FinanceSerializer(read_only=True)
-    finance_idx = serializers.CharField(write_only=True)
     first_name = serializers.CharField(write_only=True)
     middle_name = serializers.CharField(write_only=True)
     last_name = serializers.CharField(write_only=True)
@@ -259,7 +182,6 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
             "idx",
             "user",
             "finance",
-            "finance_idx",
             "first_name",
             "middle_name",
             "last_name",
@@ -272,39 +194,11 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
             "status",
         ]
 
-    # def create(self, validated_data):
-    #     try:
-    #         finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-    #     except Finance.DoesNotExist:
-    #         raise serializers.ValidationError("Finance does not exist")
-    #     validated_data["finance"] = finance
-
-    #     try:
-    #         user = User.objects.get(
-    #             first_name=validated_data["first_name"],
-    #             middle_name=validated_data["middle_name"],
-    #             last_name=validated_data["last_name"],
-    #         )
-    #     except User.DoesNotExist:
-    #         data = validated_data
-    #         data.pop("loan_amount")   
-    #         data["username"] = generate_username(
-    #             validated_data["first_name"], validated_data["last_name"]
-    #         )
-    #         user = User.objects.create(**data)
-
-    #     validated_data["user"] = user
-    #     loan_application = LoanApplication.objects.create(
-    #         finance=finance, user=user, loan_amount=validated_data["loan_amount"]
-    #     )
-    #     return loan_application
+        serializers = {
+            "finance": FinanceSerializer
+        }
 
     def create(self, validated_data):
-        try:
-            finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-        except Finance.DoesNotExist:
-            raise serializers.ValidationError("Finance does not exist")
-        validated_data["finance"] = finance
 
         try:
             user = User.objects.get(
@@ -322,15 +216,13 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
                 "citizenship_issued_date": validated_data["citizenship_issued_date"],
                 "phone_number": validated_data["phone_number"],
                 "father_name": validated_data["father_name"],
-                "username": generate_username(
-                    validated_data["first_name"], validated_data["last_name"]
-                ),
+                
             }
             user = User.objects.create(**user_data)
 
         validated_data["user"] = user
         loan_application = LoanApplication.objects.create(
-            finance=finance, user=user, loan_amount=validated_data["loan_amount"]
+            finance=validated_data["finance"], user=user, loan_amount=validated_data["loan_amount"]
         )
         return loan_application
 
@@ -344,12 +236,7 @@ class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
         ]
 
     # def update(self,instance, validated_data):
-    #     try:
-    #         finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-    #     except Finance.DoesNotExist:
-    #         raise serializers.ValidationError("Finance does not exist")
-    #     validated_data["finance"] = finance
-
+    #     
     #     try:
     #         user = User.objects.get(
     #             first_name=validated_data["first_name"],
@@ -366,7 +253,7 @@ class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
 
     #     validated_data["user"] = user
     #     loan_application = LoanApplication.objects.update(
-    #         finance=finance,user=user, loan_amount=validated_data["loan_amount"]
+    #         finance=validated_data["finance"],user=user, loan_amount=validated_data["loan_amount"]
     #     )
     #     return loan_application
 
@@ -387,41 +274,8 @@ class CompanySerializer(BaseModelSerializerMixin):
         ]
 
 
-class CreateCompanySerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Company
-        fields = [
-            "idx",
-            "name",
-            "pan_num",
-            "vat_num",
-            "permanent_add",
-            "pan_registration_date",
-            "pan_registration_place",
-            "profiter",
-            "lone_taker_type",
-        ]
-
-
-class UpdateCompanySerializer(BaseModelSerializerMixin):
-    class Meta:
-        model = Company
-        fields = [
-            "idx",
-            "name",
-            "pan_num",
-            "vat_num",
-            "permanent_add",
-            "pan_registration_date",
-            "pan_registration_place",
-            "share_holders",
-            "profiter",
-            "lone_taker_type",
-        ]
-
 
 class SecurityDepositSerializer(BaseModelSerializerMixin):
-    loan = LoanAccountSerializer(read_only=True)
     class Meta:
         model = SecurityDeposit
         fields = [
@@ -435,37 +289,13 @@ class SecurityDepositSerializer(BaseModelSerializerMixin):
             "latest_value",
             "latest_valuation_date",
         ]
-
-
-class CreateSecurityDepositSerializer(BaseModelSerializerMixin):
-    loan = LoanAccountSerializer(read_only=True)
-    loan_idx = serializers.CharField(write_only=True)
-    class Meta:
-        model = SecurityDeposit
-        fields = [
-            "idx",
-            "loan",
-            "loan_idx",
-            "type",
-            "description",
-            "ownership_type",
-            "coverage_percentage",
-            "nature_of_charge",
-            "latest_value",
-            "latest_valuation_date",
-        ]
-    
-    def create(self, validated_data):
-        loan = LoanAccount.objects.get(idx=validated_data.pop("loan_idx"))
-        validated_data["loan"] = loan
-        security = SecurityDeposit.objects.create(**validated_data)
-        return security
+        serializers = {
+            "loan": LoanAccountSerializer
+        }
 
 
 class BlacklistSerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    finance = FinanceSerializer(read_only=True)
-    class Meta:
+     class Meta:
         model = Blacklist
         fields = [
             "idx",
@@ -478,41 +308,14 @@ class BlacklistSerializer(BaseModelSerializerMixin):
             "release_date",
             "report_date",
         ]
+        serializers = {
+            "user": UserSerializer,
+            "finance": FinanceSerializer
+        }
 
-
-class CreateBlacklistSerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    user_idx = serializers.CharField(write_only=True)
-    finance = FinanceSerializer(read_only=True)
-    finance_idx = serializers.CharField(write_only=True)
-    class Meta:
-        model = Blacklist
-        fields = [
-            "idx",
-            "user",
-            "user_idx",
-            "finance",
-            "finance_idx",
-            "category",
-            "reason",
-            "remarks",
-            "status",
-            "release_date",
-            "report_date",
-        ]
-    
-    def create(self, validated_data):
-        user = User.objects.get(idx=validated_data.pop("user_idx"))
-        validated_data["user"] = user
-        finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-        validated_data["finance"] = finance
-        blacklist = Blacklist.objects.create(**validated_data)
-        return blacklist
 
 
 class BlacklistReportSerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    finance = FinanceSerializer(read_only=True)
     class Meta:
         model = BlacklistReport
         fields = [
@@ -521,69 +324,41 @@ class BlacklistReportSerializer(BaseModelSerializerMixin):
             "finance",
             "status",
         ]
+        serializers = {
+            "user": UserSerializer,
+            "finance": FinanceSerializer
+        }
 
 
-class CreateBlacklistReportSerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    user_idx = serializers.CharField(write_only=True)
-    finance = FinanceSerializer(read_only=True)
-    finance_idx = serializers.CharField(write_only=True)
-    class Meta:
-        model = BlacklistReport
-        fields = [
-            "idx",
-            "user",
-            "user_idx",
-            "finance",
-            "finance_idx",
-            "status",
-        ]
-    
-    def create(self, validated_data):
-        user = User.objects.get(idx=validated_data.pop("user_idx"))
-        validated_data["user"] = user
-        finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-        validated_data["finance"] = finance
-        blacklist = BlacklistReport.objects.create(**validated_data)
-        return blacklist
 
 class InquirySerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    finance = FinanceSerializer(read_only=True)
-    class Meta:
-        model = Inquiry
-        fields = [
-            "idx",
-            "user",
-            "finance",
-            "reason",
-            "inquirer",
-        ]
-
-
-class CreateInquirySerializer(BaseModelSerializerMixin):
-    user = UserSerializer(read_only=True)
-    user_idx = serializers.CharField(write_only=True)
-    finance = FinanceSerializer(read_only=True)
-    finance_idx = serializers.CharField(write_only=True)
     inquirer = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    
+ 
     class Meta:
         model = Inquiry
         fields = [
             "idx",
             "user",
-            "user_idx",
             "finance",
-            "finance_idx",
             "reason",
             "inquirer",
         ]
-    
-    def create(self, validated_data):
-        user = User.objects.get(idx=validated_data.pop("user_idx"))
-        validated_data["user"] = user
-        finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
-        validated_data["finance"] = finance
-        inquiry = Inquiry.objects.create(**validated_data)
-        return inquiry
+        serializers = {
+            "user": UserSerializer,
+            "finance": FinanceSerializer
+
+        }
+
+
+class FinanceStaffSerializer(BaseModelSerializerMixin):
+    class Meta:
+        model = FinanceStaff
+        fields = [
+            "idx",
+            "user",
+            "finance",
+        ]
+        serializers = {
+            "user": StaffUserSerializer,
+            "finance": FinanceSerializer
+        }

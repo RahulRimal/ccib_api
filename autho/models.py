@@ -14,7 +14,7 @@ from django.utils.translation import gettext_lazy as _
 from common.models import BaseModelMixin
 
 
-class UserManager(BaseUserManager):
+class StaffUserManager(BaseUserManager):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
@@ -31,7 +31,7 @@ class UserManager(BaseUserManager):
         return self._create_user(username, email, password, **extra_fields)
 
 
-class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
+class User(BaseModelMixin):
     """
     Username and password are required. Other fields are optional.
     """
@@ -44,21 +44,6 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
         (GENDER_FEMALE, GENDER_FEMALE.capitalize()),
     )
 
-
-    username_validator = UnicodeUsernameValidator()
-
-    username = models.CharField(
-        _("username"),
-        max_length=150,
-        unique=True,
-        help_text=_(
-            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
-        ),
-        validators=[username_validator],
-        error_messages={
-            "unique": _("A user with that username already exists."),
-        },
-    )
     first_name = models.CharField(_("first name"), max_length=150, blank=True)
     middle_name = models.CharField(max_length=150, blank=True, null=True)
     last_name = models.CharField(_("last name"), max_length=150, blank=True)
@@ -90,10 +75,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
     )
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
-    objects = UserManager()
 
     EMAIL_FIELD = "email"
-    USERNAME_FIELD = "username"
     REQUIRED_FIELDS = ["email"]
 
     def __str__(self):
@@ -121,3 +104,31 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+
+
+class StaffUser(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
+
+
+    username_validator = UnicodeUsernameValidator()
+
+    username = models.CharField(
+        _("username"),
+        max_length=150,
+        unique=True,
+        help_text=_(
+            "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+        ),
+        validators=[username_validator],
+        error_messages={
+            "unique": _("A user with that username already exists."),
+        },
+    )
+    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name="staff_user")
+    objects = StaffUserManager()
+
+
+    USERNAME_FIELD = "username"
+
+
+
