@@ -1,5 +1,5 @@
 from django.db import models
-from autho.models import User
+from autho.models import StaffUser, User
 
 from common.models import BaseModelMixin
 
@@ -124,6 +124,11 @@ class Finance(BaseModelMixin):
         return self.name
 
 
+class FinanceStaff(BaseModelMixin):
+    user = models.OneToOneField(StaffUser, on_delete=models.CASCADE, related_name="finance_staff")
+    finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="staffs")    
+
+
 class LoanApplication(BaseModelMixin):
 
     STATUS_PENDING = "pending"
@@ -227,3 +232,5 @@ class Inquiry(BaseModelMixin):
     finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="inquiries")
     reason = models.CharField(max_length=500)
     inquirer = models.ForeignKey(User, on_delete=models.PROTECT, related_name="inquiries")
+
+

@@ -155,7 +155,7 @@ SIMPLE_JWT = {
 }
 
 
-AUTH_USER_MODEL = "autho.User"
+AUTH_USER_MODEL = "autho.StaffUser"
 
 CORS_ALLOW_ALL_ORIGINS: bool = True
 
