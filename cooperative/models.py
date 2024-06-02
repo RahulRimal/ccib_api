@@ -117,8 +117,13 @@ class Shareholder(BaseModelMixin):
 
 class Finance(BaseModelMixin):
     name = models.CharField(max_length=100)
+    parent = models.ForeignKey("Finance", on_delete=models.CASCADE, blank=True, null=True)
     description = models.CharField(max_length=1000)
     location = models.JSONField(default=dict)
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=15)
+    website_url = models.URLField(blank=True, null=True)
+
 
     def __str__(self):
         return self.name

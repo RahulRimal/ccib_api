@@ -75,7 +75,7 @@ class CreatePersonalGuarantorSerializer(BaseModelSerializerMixin):
 class FinanceSerializer(BaseModelSerializerMixin):
     class Meta:
         model = Finance
-        fields = ["idx", "name", "description", "location"]
+        fields = ["idx", "name", "parent", "email",  "description", "location", "phone_number", "website_url"]
 
 
 class LoanAccountSerializer(BaseModelSerializerMixin):
