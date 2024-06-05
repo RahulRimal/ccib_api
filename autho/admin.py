@@ -14,6 +14,4 @@ class UserAdmin(admin.ModelAdmin):
         "dob",
         "father_name",
         "phone_number",
-        "is_active",
-        "is_staff"
     ]

@@ -27,7 +27,7 @@ class StaffUserManager(BaseUserManager):
         extra_fields.setdefault("citizenship_issued_place", "")
         extra_fields.setdefault("citizenship_issued_date", datetime.date.today())
         extra_fields.setdefault("father_name", "")
-
+        
         return self._create_user(username, email, password, **extra_fields)
 
 
@@ -60,19 +60,7 @@ class User(BaseModelMixin):
     permanent_address = models.CharField(max_length=255)
     temporary_address = models.CharField(max_length=255)
 
-    is_staff = models.BooleanField(
-        _("staff status"),
-        default=False,
-        help_text=_("Designates whether the user can log into this admin site."),
-    )
-    is_active = models.BooleanField(
-        _("active"),
-        default=True,
-        help_text=_(
-            "Designates whether this user should be treated as active. "
-            "Unselect this instead of deleting accounts."
-        ),
-    )
+    
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
 
 
@@ -107,7 +95,7 @@ class User(BaseModelMixin):
 
 
 
-class StaffUser(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
+class StaffUser(AbstractBaseUser, PermissionsMixin, User):
 
 
     username_validator = UnicodeUsernameValidator()
@@ -124,7 +112,19 @@ class StaffUser(AbstractBaseUser, PermissionsMixin, BaseModelMixin):
             "unique": _("A user with that username already exists."),
         },
     )
-    user = models.OneToOneField(User, on_delete=models.PROTECT, related_name="staff_user")
+    is_staff = models.BooleanField(
+        _("staff status"),
+        default=False,
+        help_text=_("Designates whether the user can log into this admin site."),
+    )
+    is_active = models.BooleanField(
+        _("active"),
+        default=True,
+        help_text=_(
+            "Designates whether this user should be treated as active. "
+            "Unselect this instead of deleting accounts."
+        ),
+    )
     objects = StaffUserManager()
 
 
