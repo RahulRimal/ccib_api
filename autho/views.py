@@ -96,12 +96,12 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
         if not user_idx:
             return api_response_error("User ID is required", status=400)
         
-        type_counts = LoanAccount.objects.filter(user__idx=user_idx).values('loan_type').annotate(count=Count('loan_type'))
+        type_counts = LoanAccount.objects.filter(user__idx=user_idx).values('loan_nature').annotate(count=Count('loan_nature'))
         
         results = {loan_type: 0 for loan_type, _ in LoanAccount.NATURE_CHOICES}
 
         for type_count in type_counts:
-            results[type_count['loan_type']] = type_count['count']
+            results[type_count['loan_nature']] = type_count['count']
         
         return api_response_success(results)
     
