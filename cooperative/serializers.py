@@ -332,7 +332,6 @@ class BlacklistReportSerializer(BaseModelSerializerMixin):
 
 
 class InquirySerializer(BaseModelSerializerMixin):
-    inquirer = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
  
     class Meta:
         model = Inquiry
@@ -345,8 +344,8 @@ class InquirySerializer(BaseModelSerializerMixin):
         ]
         serializers = {
             "user": UserSerializer,
-            "finance": FinanceSerializer
-
+            "finance": FinanceSerializer,
+            "inquirer": StaffUserSerializer
         }
 
 

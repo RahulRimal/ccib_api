@@ -288,5 +288,5 @@ class Inquiry(BaseModelMixin):
     )
     reason = models.CharField(max_length=500)
     inquirer = models.ForeignKey(
-        User, on_delete=models.PROTECT, related_name="inquiries"
+        StaffUser, on_delete=models.PROTECT, related_name="inquiries"
     )

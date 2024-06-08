@@ -22,13 +22,7 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
     serializer_class = UserSerializer
     filterset_fields = ["first_name", "last_name", "phone_number", "loans__account_number", "loans__finance__idx"]
 
-    @action(detail=False, methods = ['GET', 'PATCH'])
-    def me(self, request):
-        user = request.user
-        serializer = self.get_serializer(user)
-        return Response(serializer.data)
-    
-    
+
     @action(detail=False, methods=["POST"])
     def change_password(self, request: HttpRequest) -> Response:
 
@@ -128,6 +122,14 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
 class StaffUserViewSet(BaseApiMixin, ModelViewSet):
     queryset = StaffUser.objects.all()
     serializer_class = StaffUserSerializer
+
+    @action(detail=False, methods = ['GET', 'PATCH'])
+    def me(self, request):
+        user = request.user
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+    
+    
 
 
 class TokenObtainPairView(TokenObtainPairView):
