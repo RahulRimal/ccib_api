@@ -15,21 +15,17 @@ class PersonalGuarantorInLineAdmin(admin.TabularInline):
 
 
 @admin.register(LoanAccount)
-class LoanAccountAdmin(admin.ModelAdmin):
+class LoanAdmin(admin.ModelAdmin):
     list_display = [
         "idx",
-        "user",
-        "account_number",
-        "total_loan",
-        "total_paid",
-        "loan_outstanding",
-        "loan_limit",
-        "interest_rate",
+        "name",
+        "loan_nature",
+        "loan_amount",
+        "maturity_date",
+        "installment_due_type",
+        "installment_amount",
+        "total_outstanding",
         "overdue_amount",
-        "status",
-        "loan_type",
-        "is_closed",
-        "utilization_percent",
     ]
     inlines = [PersonalGuarantorInLineAdmin]
 

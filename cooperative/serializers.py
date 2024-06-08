@@ -86,16 +86,44 @@ class LoanAccountSerializer(BaseModelSerializerMixin):
             "user",
             "finance",
             "account_number",
-            "total_loan",
+            "loan_amount",
             "total_paid",
-            "loan_outstanding",
+            "total_outstanding",
             "loan_limit",
             "interest_rate",
             "overdue_amount",
             "status",
-            "loan_type",
+            "loan_nature",
             "is_closed",
             "utilization_percent"
+        ]
+
+class CreateLoanAccountSerializer(BaseModelSerializerMixin):
+    user_idx = serializers.CharField(write_only=True)
+    user = UserSerializer(read_only=True)
+    finance = FinanceSerializer(read_only=True)
+    finance_idx = serializers.CharField(write_only=True)
+    class Meta:
+        model = LoanAccount
+        fields = [
+            "idx",
+            "user",
+            "user_idx",
+            "finance",
+            "finance_idx",
+            "account_number",
+            "loan_amount",
+            "total_paid",
+            "total_outstanding",
+            "loan_limit",
+            "interest_rate",
+            "overdue_amount",
+            "status",
+            "loan_nature",
+            "is_closed",
+            "utilization_percent",
+            "installment_amount",
+            "maturity_date"
 
         ]
         serializers = {

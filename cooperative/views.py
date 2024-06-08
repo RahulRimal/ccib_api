@@ -10,7 +10,8 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.decorators import action
 
 
-from autho.models import User
+from autho.models import StaffUser, User
+from autho.serializers import StaffUserSerializer
 from common.api_response import api_response_error, api_response_success
 from common.mixins import BaseApiMixin
 from common.helpers import get_local_date
@@ -66,8 +67,7 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanAccount.objects.all()
     serializer_class = LoanAccountSerializer
-    filterset_fields = ["status", "user", "account_number", "loan_type"]
-
+    filterset_fields = ["status", "user", "account_number", "loan_nature"]
 
     @action(detail=False, methods=["GET"])
     def loan_status_overview(self, request):
@@ -81,74 +81,6 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
             results[status_count["status"]] = status_count["count"]
 
         return api_response_success(results)
-
-
-class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
-    http_method_names = ["get", "post", "patch", "delete"]
-    queryset = LoanApplication.objects.all()
-    filterset_fields = ["status", "user", "finance"]
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateLoanApplicationSerializer
-        if self.request.method == "PATCH":
-            return UpdateLoanApplicationSerializer
-        return LoanApplicationSerializer
-
-
-class CompanyViewSet(BaseApiMixin, ModelViewSet):
-    http_method_names = ["get", "post", "patch", "delete"]
-    queryset = Company.objects.all()
-    serializer_class = CompanySerializer
-    filterset_fields = ["name", "pan_num", "vat_num"]
-
- 
-
-class FinanceViewSet(BaseApiMixin, ModelViewSet):
-    queryset = Finance.objects.all()
-    serializer_class = FinanceSerializer
-    filterset_fields = ["name"]
-
-    @action(detail=False, methods=["GET"])
-    def quick_summary(self, request):
-        finance = Finance.objects.filter(
-            idx=request.query_params.get("finance_idx")
-        ).first()
-        total_users = User.objects.count()
-
-        total_active_loans = LoanAccount.objects.filter(
-            status="active", finance=finance
-        ).count()
-
-        data = {"total_users": total_users, "total_active_loans": total_active_loans}
-
-        return api_response_success(data)
-
-    @action(detail=False, methods=["GET"])
-    def income_overview(self, request):
-        one_year_ago = datetime.now().date() - timedelta(days=365)
-        installments = Installment.objects.filter(due_date__lte=one_year_ago)
-
-        monthly_data = defaultdict(lambda: {"total_due": 0, "total_paid": 0})
-
-        for installment in installments:
-            month = installment.due_date.strftime("%Y-%m")
-            monthly_data[month]["total_due"] += installment.total_due
-            monthly_data[month]["total_paid"] += installment.total_paid
-
-        sorted_monthly_data = dict(sorted(monthly_data.items()))
-
-        response_data = []
-        for month, data in sorted_monthly_data.items():
-            response_data.append(
-                {
-                    "date": month + "-01",
-                    "total_due": data["total_due"],
-                    "total_paid": data["total_paid"],
-                }
-            )
-
-        return api_response_success(response_data)
 
     @action(detail=False, methods=["GET"])
     def overdue_loans(self, request):
@@ -198,11 +130,114 @@ class FinanceViewSet(BaseApiMixin, ModelViewSet):
         return api_response_success(response_data)
 
 
+class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = LoanApplication.objects.all()
+    filterset_fields = ["status", "user", "finance"]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateLoanApplicationSerializer
+        if self.request.method == "PATCH":
+            return UpdateLoanApplicationSerializer
+        return LoanApplicationSerializer
+
+    @action(detail=False, methods=["GET"])
+    def loan_application_history(self, request):
+        application = LoanApplication.objects.filter(
+            user__idx=self.kwargs.get("user_idx")
+        )
+        serializer = self.get_serializer(application, many=True)
+
+        return api_response_success(serializer.data)
+
+
+class CompanyViewSet(BaseApiMixin, ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+    filterset_fields = ["name", "pan_num", "vat_num"]
+
+
+class FinanceViewSet(BaseApiMixin, ModelViewSet):
+    queryset = Finance.objects.all()
+    serializer_class = FinanceSerializer
+    filterset_fields = ["name"]
+
+    @action(detail=False, methods=["GET"])
+    def quick_summary(self, request):
+        finance = Finance.objects.filter(
+            idx=request.query_params.get("finance_idx")
+        ).first()
+        total_users = User.objects.count()
+
+        total_active_loans = LoanAccount.objects.filter(
+            status="active", finance=finance
+        ).count()
+
+        data = {"total_users": {
+            "title": "Total Users",
+            "value": total_users,
+            "icon_library": "md",
+            "icon": "MdPeopleAlt",
+        }, "total_active_loans": {
+            "title": "Active Loans",
+            "value": total_active_loans,
+            "icon_library": "fa",
+            "icon": "FaMoneyCheckAlt",
+        }}
+
+        return api_response_success(data)
+
+    @action(detail=False, methods=["GET"])
+    def profile_info(self, request):
+        """finance = Finance.objects.filter(
+            idx=request.query_params.get("finance_idx")
+        ).first()"""
+
+        finance = Finance.objects.last()
+        finance_serializer = FinanceSerializer(finance)
+
+        user = StaffUser.objects.last()
+        user_serializer = StaffUserSerializer(user)
+
+        data = {"finance": finance_serializer.data, "user": user_serializer.data}
+
+        return api_response_success(data)
+
+    @action(detail=False, methods=["GET"])
+    def income_overview(self, request):
+        one_year_ago = datetime.now().date() - timedelta(days=365)
+        installments = Installment.objects.filter(due_date__lte=one_year_ago)
+
+        monthly_data = defaultdict(lambda: {"total_due": 0, "total_paid": 0})
+
+        for installment in installments:
+            month = installment.due_date.strftime("%Y-%m")
+            monthly_data[month]["total_due"] += installment.total_due
+            monthly_data[month]["total_paid"] += installment.total_paid
+
+        sorted_monthly_data = dict(sorted(monthly_data.items()))
+
+        response_data = []
+        for month, data in sorted_monthly_data.items():
+            response_data.append(
+                {
+                    "date": month + "-01",
+                    "total_due": data["total_due"],
+                    "total_paid": data["total_paid"],
+                }
+            )
+
+        return api_response_success(response_data)
+
+
 class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = FinanceStaff.objects.all()
     serializer_class = FinanceStaffSerializer
-    filterset_fields = [ "finance"]
+    filterset_fields = ["finance"]
+
 
 class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
@@ -210,7 +245,6 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     serializer_class = InstallmentSerializer
     filterset_fields = ["loan", "due_date", "total_outstanding"]
 
-  
     @action(detail=False, methods=["GET"])
     def credit_profile_summary(self, request):
         user_idx = request.query_params.get("user")
@@ -270,7 +304,7 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 
         return api_response_success(overview_data)
 
-  
+
 class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = SecurityDeposit.objects.all()
@@ -285,13 +319,10 @@ class BlacklistViewSet(BaseApiMixin, ModelViewSet):
     serializer_class = BlacklistSerializer
 
 
-
 class BlacklistReportViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = BlacklistReport.objects.all()
     serializer_class = BlacklistReportSerializer
-
- 
 
 
 class InquiryViewSet(BaseApiMixin, ModelViewSet):
