@@ -23,37 +23,6 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
     filterset_fields = ["first_name", "last_name", "phone_number", "loans__account_number", "loans__finance__idx"]
 
 
-    @action(detail=False, methods=["POST"])
-    def change_password(self, request: HttpRequest) -> Response:
-
-        if not request.user.is_authenticated:
-            return api_response_error(
-                {"detail": "User is not authenticated."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        
-        user: StaffUser = request.user
-        old_password = request.data.get("old_password")
-        new_password = request.data.get("new_password")
-
-        is_correct = user.check_password(old_password)
-        if is_correct:
-            if not new_password:
-                return api_response_error(
-                    {"detail": "New password cannot be empty."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            user.set_password(new_password)
-            user.save()
-            return api_response_success(
-                {"detail": "Password updated successfully."}, status=status.HTTP_200_OK
-            )
-        else:
-            return api_response_error(
-                {"detail": "Old password is incorrect."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-    
 
     @action(detail=False, methods=["GET"])
     def user_account_summary(self, request):
@@ -129,6 +98,37 @@ class StaffUserViewSet(BaseApiMixin, ModelViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data)
     
+
+    @action(detail=False, methods=["POST"])
+    def change_password(self, request: HttpRequest) -> Response:
+
+        if not request.user.is_authenticated:
+            return api_response_error(
+                {"detail": "User is not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        
+        user: StaffUser = request.user
+        old_password = request.data.get("old_password")
+        new_password = request.data.get("new_password")
+
+        is_correct = user.check_password(old_password)
+        if is_correct:
+            if not new_password:
+                return api_response_error(
+                    {"detail": "New password cannot be empty."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            user.set_password(new_password)
+            user.save()
+            return api_response_success(
+                {"detail": "Password updated successfully."}, status=status.HTTP_200_OK
+            )
+        else:
+            return api_response_error(
+                {"detail": "Old password is incorrect."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
     
 
 
