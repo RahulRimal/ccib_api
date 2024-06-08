@@ -38,7 +38,7 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         
-        user: User = request.user
+        user: StaffUser = request.user
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
 
