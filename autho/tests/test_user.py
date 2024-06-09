@@ -9,10 +9,6 @@ from rest_framework import status
 from model_bakery import baker
 
 
-
-
-
-
 class TestUser(TestCase):
     pass
 
@@ -198,33 +194,29 @@ class TestMe(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("autho.StaffUser")
 
     def test_me_when_user_exists(self):
         client = APIClient()
         client.force_authenticate(user=self.user)
         response = client.get(
-            "/auth/users/me/",
+            "/auth/staffusers/me/",
             
         )
         self.assertEqual(response.status_code , status.HTTP_200_OK)
     
 
-
 class TestChangePassword(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
-
         super().setUpTestData()
         cls.user = baker.make("autho.StaffUser", password=make_password("old_password"))
-
 
     def test_change_password_when_user_exists(self):
         client = APIClient()
         client.force_authenticate(user=self.user)
         response = client.post(
-            "/auth/users/change_password/",
+            "/auth/staffusers/change_password/",
             {
                 "old_password": "old_password",
                 "new_password": "new_password",
