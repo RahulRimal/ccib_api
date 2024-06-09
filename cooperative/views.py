@@ -329,7 +329,7 @@ class InquiryViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Inquiry.objects.all()
     filterset_fields = ["user"]
-    serializer_class = BlacklistSerializer
+    serializer_class = InquirySerializer
 
 
 class ReportView(BaseApiMixin, APIView):
