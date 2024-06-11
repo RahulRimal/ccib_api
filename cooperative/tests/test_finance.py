@@ -117,7 +117,7 @@ class QuickSummary(APITestCase):
 
 
 @pytest.mark.django_db
-class TestIncome_overview(APITestCase):
+class TestIncomeOverview(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
@@ -129,6 +129,24 @@ class TestIncome_overview(APITestCase):
         client = APIClient()
         response = client.get(
             "/cooperative/finance/income_overview/",
+          
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+@pytest.mark.django_db
+class ProfileInfo(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.finance = baker.make("cooperative.Finance")
+        cls.user = baker.make("autho.User")
+
+
+    def test_profile_info(self):
+        client = APIClient()
+        response = client.get(
+            "/cooperative/finance/profile_info/",
           
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
