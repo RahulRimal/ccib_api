@@ -315,3 +315,79 @@ class TestDetailLoanAccount(APITestCase):
         )
 
 
+
+class TestOverDueLoans(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user = baker.make("autho.User")
+        cls.installment = baker.make("cooperative.Installment")
+        cls.finance = baker.make("cooperative.Finance")
+        cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
+
+    def test_overdue_loans(self):
+        client = APIClient()
+        response = client.get(
+            "/cooperative/loans/overdue_loans/",
+            {
+                "due_date": "2022-01-01",
+                "status": "good",
+                "user": self.user.first_name,
+                "total_due_amount": 0
+
+            },
+        )
+
+
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK
+        )
+
+
+@pytest.mark.django_db
+class TestListOverdueLoans(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user = baker.make("autho.User")
+        cls.finance = baker.make("cooperative.Finance")
+        cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
+
+    def test_list_overdue_loans(self):
+        client = APIClient()
+        response = client.get(
+            "/cooperative/loans/overdue_loans/",
+            {
+                "due_date": "2022-01-01",
+                "status": "good",
+                "user": self.user.first_name,
+                "total_due_amount": 0
+
+            },
+        )
+
+
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK
+        )
+    
+@pytest.mark.django_db
+class TestLoanStatusOverview(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.user = baker.make("autho.User")
+        cls.finance = baker.make("cooperative.Finance")
+        cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
+
+    def test_loan_status_overview(self):
+        client = APIClient()
+        response = client.get(
+            "/cooperative/loans/loan_status_overview/",
+
+        )
+        self.assertEqual(
+            response.status_code, status.HTTP_200_OK
+        )
+
+

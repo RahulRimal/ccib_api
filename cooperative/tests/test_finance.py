@@ -2,6 +2,7 @@ import pytest
 
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
+from datetime import timedelta, datetime
 
 from model_bakery import baker
 
@@ -95,3 +96,39 @@ class TestDeleteFinance(APITestCase):
             f"/cooperative/finance/{self.finance.idx}/",
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+@pytest.mark.django_db
+class QuickSummary(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.finance = baker.make("cooperative.Finance")
+        cls.user = baker.make("autho.User")
+        cls.loan = baker.make("cooperative.LoanAccount")
+
+
+    def test_quick_summary(self):
+        client = APIClient()
+        response = client.get(
+            "/cooperative/finance/quick_summary/",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+@pytest.mark.django_db
+class TestIncome_overview(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.finance = baker.make("cooperative.Finance")
+        cls.installment = baker.make("cooperative.Installment", due_date=datetime.now() + timedelta(days=30), total_due=10000, total_paid=5000)
+
+
+    def test_income_overview(self):
+        client = APIClient()
+        response = client.get(
+            "/cooperative/finance/income_overview/",
+          
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
