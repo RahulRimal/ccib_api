@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 from django.utils import timezone
 from django.db.models import F, Max, Min, Prefetch, Q, Count
 
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from rest_framework.views import APIView
@@ -237,6 +238,12 @@ class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
     queryset = FinanceStaff.objects.all()
     serializer_class = FinanceStaffSerializer
     filterset_fields = ["finance"]
+
+    @action(detail=False, methods = ['GET', 'PATCH'])
+    def me(self, request):
+        user = request.user
+        serializer = self.get_serializer(user)
+        return Response()
 
 
 class InstallmentViewSet(BaseApiMixin, ModelViewSet):

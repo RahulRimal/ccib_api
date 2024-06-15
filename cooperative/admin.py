@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from cooperative.models import Blacklist, BlacklistReport, Company, Finance, Inquiry, Installment, LoanAccount, LoanApplication, PersonalGuarantor, SecurityDeposit
+from cooperative.models import Blacklist, BlacklistReport, Company, Finance, FinanceStaff, Inquiry, Installment, LoanAccount, LoanApplication, PersonalGuarantor, SecurityDeposit
 
 
 # Register your models here.
@@ -61,6 +61,14 @@ class FinanceAdmin(admin.ModelAdmin):
         "name",
         "description",
         "location",
+    ]
+
+@admin.register(FinanceStaff)
+class FinanceStaffAdmin(admin.ModelAdmin):
+    list_display = [
+        "idx",
+        "user",
+        "finance",
     ]
 
 
