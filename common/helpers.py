@@ -11,6 +11,12 @@ def generate_username(first_name: str, last_name: str) -> str:
     return username
 
 
+def generate_random_number(length: int = 15) -> int:
+    """Generate a random number"""
+    import random
+    import string
+    return int("".join(random.choices(string.digits, k=length)))
+
 def get_local_datetime() -> datetime:
     return timezone.now()
 

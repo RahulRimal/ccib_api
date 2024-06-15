@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from autho.models import User
+from autho.models import StaffUser, User
 
 # Register your models here.
 
@@ -14,4 +14,17 @@ class UserAdmin(admin.ModelAdmin):
         "dob",
         "father_name",
         "phone_number",
+    ]
+
+
+@admin.register(StaffUser)
+class StaffUserAdmin(admin.ModelAdmin):
+    list_display = [
+        "idx",
+        "first_name",
+        "last_name",
+        "dob",
+        "father_name",
+        "phone_number",
+        "is_staff",
     ]

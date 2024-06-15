@@ -47,11 +47,13 @@ class UserSerializer(BaseModelSerializerMixin):
 
 class StaffUserSerializer(BaseModelSerializerMixin):
     username = serializers.CharField(read_only=True)
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = StaffUser
         fields = [
             "idx",
             "username",
+            "password",
             "first_name",
             "middle_name",
             "last_name",
@@ -75,8 +77,13 @@ class StaffUserSerializer(BaseModelSerializerMixin):
             validated_data["first_name"], validated_data["last_name"]
         )
         validated_data["username"] = username
-        return super().create(validated_data)
-    
+        validated_data["is_staff"] = True
+        password = validated_data.pop("password")
+        user = super().create(validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
     def update(self, instance, validated_data):
         username = generate_username(
             validated_data.get("first_name", instance.first_name),

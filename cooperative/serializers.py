@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from autho.models import User
 from autho.serializers import StaffUserSerializer, UserSerializer
-from common.helpers import generate_username
+from common.helpers import generate_random_number, generate_username
 from common.mixins import BaseModelSerializerMixin
 from cooperative.models import (
     Blacklist,
@@ -79,10 +79,12 @@ class FinanceSerializer(BaseModelSerializerMixin):
 
 
 class LoanAccountSerializer(BaseModelSerializerMixin):
+    account_number = serializers.CharField(read_only=True)
     class Meta:
         model = LoanAccount
         fields = [
             "idx",
+            "name",
             "user",
             "finance",
             "account_number",
@@ -95,42 +97,21 @@ class LoanAccountSerializer(BaseModelSerializerMixin):
             "status",
             "loan_nature",
             "is_closed",
-            "utilization_percent"
-        ]
-
-class CreateLoanAccountSerializer(BaseModelSerializerMixin):
-    user_idx = serializers.CharField(write_only=True)
-    user = UserSerializer(read_only=True)
-    finance = FinanceSerializer(read_only=True)
-    finance_idx = serializers.CharField(write_only=True)
-    class Meta:
-        model = LoanAccount
-        fields = [
-            "idx",
-            "user",
-            "user_idx",
-            "finance",
-            "finance_idx",
-            "account_number",
-            "loan_amount",
-            "total_paid",
-            "total_outstanding",
-            "loan_limit",
-            "interest_rate",
-            "overdue_amount",
-            "status",
-            "loan_nature",
-            "is_closed",
-            "utilization_percent",
             "installment_amount",
+            "utilization_percent",
             "maturity_date"
-
         ]
         serializers = {
             "user": UserSerializer,
             "finance": FinanceSerializer
         }
 
+    def create(self, validated_data):
+        account_number = generate_random_number(length=11)
+        while LoanAccount.objects.filter(account_number=account_number).exists():
+            account_number = generate_random_number(length=11)
+        validated_data["account_number"] = account_number
+        return super().create(validated_data)
     
 
 class InstallmentSerializer(BaseModelSerializerMixin):
