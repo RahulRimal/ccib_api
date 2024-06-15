@@ -1,6 +1,11 @@
 import datetime
+from datetime import timedelta
 
+from django.http import HttpRequest
 from django.db import models
+from django.db.models import F, ExpressionWrapper, BooleanField, DateTimeField
+from django.db.models.functions import Now
+from django.db.models import Case, When
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -8,9 +13,11 @@ from django.contrib.auth.models import (
     UserManager as BaseUserManager,
 )
 from django.core.mail import send_mail
+from django.contrib.auth import authenticate
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from common.helpers import get_local_date
 from common.models import BaseModelMixin
 
 
@@ -27,7 +34,7 @@ class StaffUserManager(BaseUserManager):
         extra_fields.setdefault("citizenship_issued_place", "")
         extra_fields.setdefault("citizenship_issued_date", datetime.date.today())
         extra_fields.setdefault("father_name", "")
-        
+
         return self._create_user(username, email, password, **extra_fields)
 
 
@@ -51,7 +58,9 @@ class User(BaseModelMixin):
     citizenship_number = models.CharField(max_length=50)
     citizenship_issued_place = models.CharField(max_length=255)
     citizenship_issued_date = models.DateField()
-    gender = models.CharField(_("gender"), max_length=10, choices=GENDER_CHOICES, default=GENDER_MALE)
+    gender = models.CharField(
+        _("gender"), max_length=10, choices=GENDER_CHOICES, default=GENDER_MALE
+    )
     dob = models.DateField(blank=True, null=True)
     father_name = models.CharField(max_length=255)
     mother_name = models.CharField(max_length=255)
@@ -60,9 +69,7 @@ class User(BaseModelMixin):
     permanent_address = models.CharField(max_length=255)
     temporary_address = models.CharField(max_length=255)
 
-    
     date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
-
 
     EMAIL_FIELD = "email"
     REQUIRED_FIELDS = ["email"]
@@ -77,6 +84,10 @@ class User(BaseModelMixin):
     def clean(self):
         super().clean()
         self.email = self.__class__.objects.normalize_email(self.email)
+
+    @staticmethod
+    def has_list_permission(request: HttpRequest, *args, **kwargs):
+        return request.user.is_authenticated
 
     def get_full_name(self):
         """
@@ -94,9 +105,7 @@ class User(BaseModelMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-
 class StaffUser(AbstractBaseUser, PermissionsMixin, User):
-
 
     username_validator = UnicodeUsernameValidator()
 
@@ -127,8 +136,63 @@ class StaffUser(AbstractBaseUser, PermissionsMixin, User):
     )
     objects = StaffUserManager()
 
-
     USERNAME_FIELD = "username"
 
+    @staticmethod
+    def has_write_permission(request: HttpRequest) -> bool:
+        """
+        Check if the user has write permission.
 
+        Args:
+            request (HttpRequest): The request object.
 
+        Returns:
+            bool: Whether the user has write permission.
+        """
+        from cooperative.models import FinanceStaff
+        from subscription.models import Subscription
+        
+        # Check permission for login api
+        if request.path == "/auth/create-token/":
+            user: StaffUser = authenticate(
+                request,
+                username=request.data.get("username"),
+                password=request.data.get("password"),
+            )
+            if not user:
+                return False
+
+            if user.is_superuser:
+                return True
+
+            finance_staff: FinanceStaff = FinanceStaff.objects.filter(user=user).first()
+
+            if finance_staff:
+                active_subscription: Subscription = Subscription.objects.filter(
+                    finance=finance_staff.finance, status="active"
+                ).first()
+
+                if active_subscription:
+                    return True
+
+                grace_subscription: Subscription = (
+                    Subscription.objects.filter(
+                        finance=finance_staff.finance, status="due"
+                    )
+                    .annotate(
+                        grace_end_date=ExpressionWrapper(
+                            F("next_billing") + F("grace_period") ,
+                            output_field=DateTimeField(),
+                        ),
+                        is_grace_remaining=Case(
+                            When(grace_end_date__gte=get_local_date(), then=True),
+                            default=False,
+                            output_field=BooleanField(),
+                        ),
+                    )
+                    .first()
+                )
+
+                return grace_subscription and grace_subscription.is_grace_remaining
+
+            return False

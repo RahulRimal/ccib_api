@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
+from autho.permission import CCIBPermission
 from common.api_response import api_response_error, api_response_success
 from common.mixins import BaseApiMixin
 from autho.serializers import StaffUserSerializer, UserSerializer
@@ -19,11 +20,9 @@ from cooperative.serializers import FinanceSerializer
 
 
 class UserViewSet(BaseApiMixin, ModelViewSet):
-    queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [CCIBPermission]
     filterset_fields = ["first_name", "last_name", "phone_number", "loans__account_number", "loans__finance__idx"]
-
-
 
     @action(detail=False, methods=["GET"])
     def user_account_summary(self, request):
@@ -134,8 +133,7 @@ class StaffUserViewSet(BaseApiMixin, ModelViewSet):
 
 
 class TokenObtainPairView(TokenObtainPairView):
-    # permission_classes = ([BazraPermission])
-    pass
+    permission_classes = ([CCIBPermission])
 
 
 class TokenRefreshView(TokenRefreshView):
