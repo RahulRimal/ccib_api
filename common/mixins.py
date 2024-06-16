@@ -1,9 +1,13 @@
 from shortuuidfield import ShortUUIDField
 from typing import Any, Dict
 
+from django.db import models
 from rest_framework.fields import get_attribute, is_simple_callable
 
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import FilterSet
+from django_filters.filterset import ModelChoiceFilter, remote_queryset, FILTER_FOR_DBFIELD_DEFAULTS
+
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -12,47 +16,46 @@ from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
 
 class IDXOnlyObject:
-	def __init__(self, idx):
-		self.idx = idx
+    def __init__(self, idx):
+        self.idx = idx
 
-	def __str__(self):
-		return "%s" % self.idx
+    def __str__(self):
+        return "%s" % self.idx
 
 
 class IdxRelatedField(serializers.PrimaryKeyRelatedField):
-	default_error_messages = {
-		'required': _('This field is required.'),
-		'does_not_exist': _('Invalid idx "{pk_value}" - object does not exist.'),
-		'incorrect_type': _('Incorrect type. Expected idx value, received {data_type}.'),
-	}
+    default_error_messages = {
+        'required': _('This field is required.'),
+        'does_not_exist': _('Invalid idx "{pk_value}" - object does not exist.'),
+        'incorrect_type': _('Incorrect type. Expected idx value, received {data_type}.'),
+    }
 
-	def get_attribute(self, instance):
-		if self.use_pk_only_optimization() and self.source_attrs:
-			# Optimized case, return a mock object only containing the pk attribute.
-			try:
-				instance = get_attribute(instance, self.source_attrs[:-1])
-				value = instance.serializable_value(self.source_attrs[-1])
-				if is_simple_callable(value):
-					# Handle edge case where the relationship `source` argument
-					# points to a `get_relationship()` method on the model
-					value = value().idx
-				else:
-					value = getattr(instance, self.source_attrs[-1]).idx
-				return IDXOnlyObject(idx=value)
-			except AttributeError:
-				pass
+    def get_attribute(self, instance):
+        if self.use_pk_only_optimization() and self.source_attrs:
+            # Optimized case, return a mock object only containing the pk attribute.
+            try:
+                instance = get_attribute(instance, self.source_attrs[:-1])
+                value = instance.serializable_value(self.source_attrs[-1])
+                if is_simple_callable(value):
+                    # Handle edge case where the relationship `source` argument
+                    # points to a `get_relationship()` method on the model
+                    value = value().idx
+                else:
+                    value = getattr(instance, self.source_attrs[-1]).idx
+                return IDXOnlyObject(idx=value)
+            except AttributeError:
+                pass
 
-	def to_representation(self, obj):
-		return obj.idx
+    def to_representation(self, obj):
+        return obj.idx
 
-	def to_internal_value(self, data):
-		try:
-			return self.queryset.get(idx=data)
-		except ObjectDoesNotExist:
-			self.fail('does_not_exist', pk_value=data)
-		except (TypeError, ValueError):
-			self.fail('incorrect_type', data_type=type(data).__name__)
-
+    def to_internal_value(self, data):
+        try:
+            return self.queryset.get(idx=data)
+        except ObjectDoesNotExist:
+            self.fail('does_not_exist', pk_value=data)
+        except (TypeError, ValueError):
+            self.fail('incorrect_type', data_type=type(data).__name__)
 
 
 class BaseModelSerializerMixin(serializers.ModelSerializer):
@@ -92,9 +95,34 @@ class BaseModelSerializerMixin(serializers.ModelSerializer):
         return representation
 
 
+FILTER_FOR_DBFIELD_DEFAULTS[models.OneToOneField] = {
+	'filter_class': ModelChoiceFilter,
+	'extra': lambda f: {
+		'queryset': remote_queryset(f),
+		'to_field_name': "idx",
+	}
+}
+
+FILTER_FOR_DBFIELD_DEFAULTS[models.ForeignKey] = {
+	'filter_class': ModelChoiceFilter,
+	'extra': lambda f: {
+		'queryset': remote_queryset(f),
+		'to_field_name': "idx",
+	}
+}
+
+
+class CCIBFilterSet(FilterSet):
+    FILTER_DEFAULTS = FILTER_FOR_DBFIELD_DEFAULTS
+
+
+class IdxFilterBackend(DjangoFilterBackend):
+    filterset_base = CCIBFilterSet
+
+
 class BaseApiMixin:
     lookup_field = "idx"
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [IdxFilterBackend]
 
     class Meta:
         abstract = True
@@ -180,5 +208,3 @@ class DetailRelatedField(serializers.RelatedField):
             return self.queryset.get(**{self.lookup: data})
         except ObjectDoesNotExist:
             raise serializers.ValidationError("Object does not exist")
-
-
