@@ -221,7 +221,7 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
 class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanApplication.objects.all()
-    filterset_fields = ["status", "user", "finance"]
+    filterset_fields = ["status", "user__idx", "finance__idx"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
