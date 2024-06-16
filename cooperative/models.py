@@ -1,12 +1,69 @@
 from django.db import models
-from autho.models import StaffUser, User
+from django.http import HttpRequest
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
+from autho.models import User, User
 
 from common.models import BaseModelMixin
 
 
-# PersonalGuarantor model
+
+class FinanceUser(BaseModelMixin):
+    
+    GENDER_MALE = "male"
+    GENDER_FEMALE = "female"
+
+    GENDER_CHOICES = (
+        (GENDER_MALE, GENDER_MALE.capitalize()),
+        (GENDER_FEMALE, GENDER_FEMALE.capitalize()),
+    )
+
+    first_name = models.CharField(_("first name"), max_length=150, blank=True)
+    middle_name = models.CharField(max_length=150, blank=True, null=True)
+    last_name = models.CharField(_("last name"), max_length=150, blank=True)
+    email = models.EmailField(_("email address"), blank=True)
+    citizenship_number = models.CharField(max_length=50)
+    citizenship_issued_place = models.CharField(max_length=255)
+    citizenship_issued_date = models.DateField()
+    gender = models.CharField(
+        _("gender"), max_length=10, choices=GENDER_CHOICES, default=GENDER_MALE
+    )
+    dob = models.DateField(blank=True, null=True)
+    father_name = models.CharField(max_length=255)
+    mother_name = models.CharField(max_length=255)
+    grandfather_name = models.CharField(max_length=255)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    permanent_address = models.CharField(max_length=255)
+    temporary_address = models.CharField(max_length=255)
+
+    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+
+    def __str__(self):
+        return self.first_name
+
+    class Meta:
+        verbose_name = _("user")
+        verbose_name_plural = _("users")
+
+    @staticmethod
+    def has_list_permission(request: HttpRequest, *args, **kwargs):
+        return request.user.is_authenticated
+
+    def get_full_name(self):
+        """
+        Return the first_name plus the last_name, with a space in between.
+        """
+        full_name = "%s %s" % (self.first_name, self.last_name)
+        return full_name.strip()
+
+    def get_short_name(self):
+        """Return the short name for the user."""
+        return self.first_name
+
+
 class PersonalGuarantor(BaseModelMixin):
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(FinanceUser, on_delete=models.PROTECT)
     loan = models.ForeignKey(
         "LoanAccount", on_delete=models.CASCADE, related_name="personal_guarantors"
     )
@@ -53,7 +110,7 @@ class LoanAccount(BaseModelMixin):
     ]
 
     name = models.CharField(max_length=100)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="loans")
+    user = models.ForeignKey(FinanceUser, on_delete=models.CASCADE, related_name="loans")
     finance = models.ForeignKey(
         "Finance", on_delete=models.CASCADE, related_name="loans"
     )
@@ -123,7 +180,7 @@ class Company(BaseModelMixin):
     permanent_add = models.CharField(max_length=255)
     pan_registration_date = models.DateField(blank=True, null=True)
     pan_registration_place = models.CharField(max_length=100, blank=True, null=True)
-    profiter = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    profiter = models.ForeignKey(FinanceUser, on_delete=models.CASCADE, blank=True, null=True)
     lone_taker_type = models.CharField(
         max_length=10, choices=LONE_TAKER_TYPE_CHOICES, default=LONE_TAKER_COMPANY
     )
@@ -139,7 +196,7 @@ class Shareholder(BaseModelMixin):
     company = models.ForeignKey(
         Company, on_delete=models.CASCADE, related_name="share_holders"
     )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(FinanceUser, on_delete=models.CASCADE)
 
 
 class Finance(BaseModelMixin):
@@ -157,7 +214,7 @@ class Finance(BaseModelMixin):
 
 
 class FinanceStaff(BaseModelMixin):
-    user = models.OneToOneField(StaffUser, on_delete=models.CASCADE, related_name="finance_staff")
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="finance_staff")
     finance = models.ForeignKey(Finance, on_delete=models.CASCADE, related_name="staffs")    
 
 
@@ -174,7 +231,7 @@ class LoanApplication(BaseModelMixin):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="loan_applications"
+        FinanceUser, on_delete=models.CASCADE, related_name="loan_applications"
     )
     loan_amount = models.DecimalField(max_digits=10, decimal_places=2)
     finance = models.ForeignKey(
@@ -243,7 +300,7 @@ class Blacklist(BaseModelMixin):
         (STATUS_BLACKLISTED, STATUS_BLACKLISTED.capitalize()),
         (STATUS_RELISHED, STATUS_RELISHED.capitalize()),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="black_list")
+    user = models.ForeignKey(FinanceUser, on_delete=models.CASCADE, related_name="black_list")
     finance = models.ForeignKey(
         Finance, on_delete=models.CASCADE, related_name="black_list"
     )
@@ -271,7 +328,7 @@ class BlacklistReport(BaseModelMixin):
     ]
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="black_list_reports"
+        FinanceUser, on_delete=models.CASCADE, related_name="black_list_reports"
     )
     finance = models.ForeignKey(
         Finance, on_delete=models.CASCADE, related_name="black_list_reports"
@@ -282,11 +339,11 @@ class BlacklistReport(BaseModelMixin):
 
 
 class Inquiry(BaseModelMixin):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(FinanceUser, on_delete=models.CASCADE)
     finance = models.ForeignKey(
         Finance, on_delete=models.CASCADE, related_name="inquiries"
     )
     reason = models.CharField(max_length=500)
     inquirer = models.ForeignKey(
-        StaffUser, on_delete=models.PROTECT, related_name="inquiries"
+        FinanceStaff, on_delete=models.PROTECT, related_name="inquiries"
     )
