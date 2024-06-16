@@ -176,12 +176,12 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
     def create(self, validated_data):
 
         try:
-            user = User.objects.get(
+            user = FinanceUser.objects.get(
                 first_name=validated_data["first_name"],
                 middle_name=validated_data["middle_name"],
                 last_name=validated_data["last_name"],
             )
-        except User.DoesNotExist:
+        except FinanceUser.DoesNotExist:
             user_data = {
                 "first_name": validated_data["first_name"],
                 "middle_name": validated_data["middle_name"],
@@ -193,7 +193,7 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
                 "father_name": validated_data["father_name"],
                 
             }
-            user = User.objects.create(**user_data)
+            user = FinanceUser.objects.create(**user_data)
 
         validated_data["user"] = user
         loan_application = LoanApplication.objects.create(
@@ -209,29 +209,7 @@ class UpdateLoanApplicationSerializer(BaseModelSerializerMixin):
             "idx",
             "status",
         ]
-
-    # def update(self,instance, validated_data):
-    #     
-    #     try:
-    #         user = User.objects.get(
-    #             first_name=validated_data["first_name"],
-    #             middle_name=validated_data["middle_name"],
-    #             last_name=validated_data["last_name"],
-    #         )
-    #     except User.DoesNotExist:
-    #         data = validated_data
-    #         data.pop("loan_amount")
-    #         data["username"] = generate_username(
-    #             validated_data["first_name"], validated_data["last_name"]
-    #         )
-    #         user = User.objects.update(**data)
-
-    #     validated_data["user"] = user
-    #     loan_application = LoanApplication.objects.update(
-    #         finance=validated_data["finance"],user=user, loan_amount=validated_data["loan_amount"]
-    #     )
-    #     return loan_application
-
+        
 
 class CompanySerializer(BaseModelSerializerMixin):
     class Meta:
