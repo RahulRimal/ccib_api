@@ -11,8 +11,9 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.decorators import action
 
 
-from autho.models import StaffUser, User
-from autho.serializers import StaffUserSerializer
+from autho.models import User, User
+from autho.permission import CCIBPermission
+from autho.serializers import UserSerializer
 from common.api_response import api_response_error, api_response_success
 from common.mixins import BaseApiMixin
 from common.helpers import get_local_date
@@ -22,6 +23,7 @@ from cooperative.models import (
     Company,
     Finance,
     FinanceStaff,
+    FinanceUser,
     Inquiry,
     Installment,
     LoanAccount,
@@ -35,9 +37,9 @@ from cooperative.serializers import (
     BlacklistSerializer,
     CompanySerializer,
     CreateLoanApplicationSerializer,
-    CreatePersonalGuarantorSerializer,
     FinanceSerializer,
     FinanceStaffSerializer,
+    FinanceUserSerializer,
     InquirySerializer,
     InstallmentSerializer,
     LoanApplicationSerializer,
@@ -48,18 +50,103 @@ from cooperative.serializers import (
 )
 
 
+class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
+    serializer_class = FinanceUserSerializer
+    # queryset = User.objects.all()
+    # permission_classes = [CCIBPermission]
+    filterset_fields = [
+        "first_name",
+        "last_name",
+        "phone_number",
+        "loans__account_number",
+        "loans__finance__idx",
+    ]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_superuser or user.is_staff:
+            return FinanceUser.objects.all()
+
+        if user.is_finance_staff:
+            return FinanceUser.objects.filter(loans__finance__user=user)
+
+        return FinanceUser.objects.none()
+
+    @action(detail=False, methods=["GET"])
+    def user_account_summary(self, request):
+
+        user_loan_accounts = LoanAccount.objects.all()
+
+        loan_accounts_list = []
+        for loan_account in user_loan_accounts:
+            finance_name = loan_account.finance.name
+            for loan_account_item in loan_accounts_list:
+                if loan_account_item["finance_name"] == finance_name:
+                    loan_account_item["total_amount"] += loan_account.total_loan
+                    loan_account_item["outstanding"] += loan_account.loan_outstanding
+                    loan_account_item["overdue_amount"] += loan_account.overdue_amount
+                    loan_account_item["total_account"] += 1
+                    break
+            else:
+                loan_accounts_list.append(
+                    {
+                        "finance_name": finance_name,
+                        "total_amount": loan_account.total_loan,
+                        "outstanding": loan_account.loan_outstanding,
+                        "overdue_amount": loan_account.overdue_amount,
+                        "total_account": 1,
+                    }
+                )
+
+        return api_response_success(loan_accounts_list)
+
+    @action(detail=False, methods=["GET"])
+    def user_loan_type(self, request):
+        user_idx = request.query_params.get("user")
+        if not user_idx:
+            return api_response_error("User ID is required", status=400)
+
+        type_counts = (
+            LoanAccount.objects.filter(user__idx=user_idx)
+            .values("loan_nature")
+            .annotate(count=Count("loan_nature"))
+        )
+
+        results = {loan_type: 0 for loan_type, _ in LoanAccount.NATURE_CHOICES}
+
+        for type_count in type_counts:
+            results[type_count["loan_nature"]] = type_count["count"]
+
+        return api_response_success(results)
+
+    @action(detail=False, methods=["GET"])
+    def user_account(self, request):
+        user_loan_accounts = LoanAccount.objects.all()  # Adjust the query as needed
+
+        user_account_list = [
+            {
+                "user_idx": user_account.user.idx,  # Assuming user is a ForeignKey field in UserLoanAccount
+                "number_of_account": user_account.account_number,
+                "type_of_loan": user_account.loan_type,
+                "finance_name": user_account.finance.name,
+                "outstanding_balance": user_account.loan_outstanding,
+                "utilization_percent_credit": user_account.utilization_percent,
+                "amount_overdue": user_account.total_loan - user_account.total_paid,
+            }
+            for user_account in user_loan_accounts
+        ]
+
+        return api_response_success(user_account_list)
+
+
 class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = PersonalGuarantor.objects.all()
+    serializer_class = PersonalGuarantorSerializer
 
     def get_queryset(self):
         return PersonalGuarantor.objects.filter(loan__idx=self.kwargs["loan_idx"])
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreatePersonalGuarantorSerializer
-        return PersonalGuarantorSerializer
-
+        
     def get_serializer_context(self):
         return {"loan_idx": self.kwargs["loan_idx"]}
 
@@ -190,24 +277,24 @@ class FinanceViewSet(BaseApiMixin, ModelViewSet):
 
         return api_response_success(data)
 
-    @action(detail=False, methods=["GET"])
-    def profile_info(self, request):
+    @action(detail=True, methods=["GET"])
+    def profile_info(self, request, *args, **kwargs):
         """finance = Finance.objects.filter(
             idx=request.query_params.get("finance_idx")
         ).first()"""
 
-        finance = Finance.objects.last()
+        finance = self.get_object()
         finance_serializer = FinanceSerializer(finance)
 
-        user = StaffUser.objects.last()
-        user_serializer = StaffUserSerializer(user)
+        user = User.objects.last()
+        user_serializer = UserSerializer(user)
 
         data = {"finance": finance_serializer.data, "user": user_serializer.data}
 
         return api_response_success(data)
 
-    @action(detail=False, methods=["GET"])
-    def income_overview(self, request):
+    @action(detail=True, methods=["GET"])
+    def income_overview(self, request, *args, **kwargs):
         one_year_ago = datetime.now().date() - timedelta(days=365)
         installments = Installment.objects.filter(due_date__lte=one_year_ago)
 

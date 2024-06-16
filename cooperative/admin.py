@@ -3,15 +3,12 @@ from django.contrib import admin
 from cooperative.models import Blacklist, BlacklistReport, Company, Finance, FinanceStaff, Inquiry, Installment, LoanAccount, LoanApplication, PersonalGuarantor, SecurityDeposit
 
 
-# Register your models here.
-
-
-class PersonalGuarantorInLineAdmin(admin.TabularInline):
-    model = PersonalGuarantor
-    extra = 1
-    max_num = 3
-    min_num = 2
-    list_display = ["idx", "user"]
+# class PersonalGuarantorInLineAdmin(admin.TabularInline):
+#     model = PersonalGuarantor
+#     extra = 1
+#     max_num = 3
+#     min_num = 2
+#     list_display = ["idx", "user"]
 
 
 @admin.register(LoanAccount)
@@ -27,7 +24,7 @@ class LoanAdmin(admin.ModelAdmin):
         "total_outstanding",
         "overdue_amount",
     ]
-    inlines = [PersonalGuarantorInLineAdmin]
+    # inlines = [PersonalGuarantorInLineAdmin]
 
 @admin.register(LoanApplication)
 class LoanApplicationAdmin(admin.ModelAdmin):

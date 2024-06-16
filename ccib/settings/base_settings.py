@@ -142,6 +142,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "COERCE_DECIMAL_TO_STRING": False,
+    # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
@@ -156,7 +157,7 @@ SIMPLE_JWT = {
 }
 
 
-AUTH_USER_MODEL = "autho.StaffUser"
+AUTH_USER_MODEL = "autho.User"
 
 CORS_ALLOW_ALL_ORIGINS: bool = True
 

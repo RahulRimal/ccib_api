@@ -12,7 +12,7 @@ from rest_framework_simplejwt.tokens import Token, RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.settings import api_settings
 
-from autho.models import StaffUser, User
+from autho.models import User, User
 from common.helpers import generate_username
 from common.mixins import BaseModelSerializerMixin
 
@@ -21,7 +21,7 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
     token_class = RefreshToken
 
     class Meta:
-        model = StaffUser
+        model = User
         
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, str]:
         data = super().validate(attrs)
@@ -38,69 +38,17 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
 
 
 class UserSerializer(BaseModelSerializerMixin):
-
-
-    class Meta:
-        model = User
-        fields = [
-            "idx",
-            "first_name",
-            "middle_name",
-            "last_name",
-            "email",
-            "citizenship_number",
-            "citizenship_issued_place",
-            "citizenship_issued_date",
-            "dob",
-            "father_name",
-            "mother_name",
-            "grandfather_name",
-            "phone_number",
-            "gender",
-            "permanent_address",
-            "temporary_address",
-        ]
-
-    # def create(self, validated_data):
-    #     username = generate_username(
-    #         validated_data["first_name"], validated_data["last_name"]
-    #     )
-    #     validated_data["username"] = username
-    #     return super().create(validated_data)
-
-    # def update(self, instance, validated_data):
-    #  username = generate_username(
-    #     validated_data.get("first_name", instance.first_name),
-    #     validated_data.get("last_name", instance.last_name),
-    # )
-    #  validated_data["username"] = username
-    #  return super().update(instance, validated_data)
-
-
-class StaffUserSerializer(BaseModelSerializerMixin):
     username = serializers.CharField(read_only=True)
     password = serializers.CharField(write_only=True)
     class Meta:
-        model = StaffUser
+        model = User
         fields = [
             "idx",
             "username",
             "password",
             "first_name",
-            "middle_name",
             "last_name",
             "email",
-            "citizenship_number",
-            "citizenship_issued_place",
-            "citizenship_issued_date",
-            "dob",
-            "father_name",
-            "mother_name",
-            "grandfather_name",
-            "phone_number",
-            "gender",
-            "permanent_address",
-            "temporary_address",
         ]
           
 
@@ -109,7 +57,7 @@ class StaffUserSerializer(BaseModelSerializerMixin):
             validated_data["first_name"], validated_data["last_name"]
         )
         validated_data["username"] = username
-        validated_data["is_staff"] = True
+        validated_data["is_staff"] = False
         password = validated_data.pop("password")
         user = super().create(validated_data)
         user.set_password(password)
