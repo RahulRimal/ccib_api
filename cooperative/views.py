@@ -12,10 +12,9 @@ from rest_framework.decorators import action
 
 
 from autho.models import User, User
-from autho.permission import CCIBPermission
 from autho.serializers import UserSerializer
 from common.api_response import api_response_error, api_response_success
-from common.mixins import BaseApiMixin, CCIBFilterSet
+from common.mixins import BaseApiMixin
 from common.helpers import get_local_date
 from cooperative.models import (
     Blacklist,
