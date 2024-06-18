@@ -74,6 +74,8 @@ class FinanceSerializer(BaseModelSerializerMixin):
         fields = ["idx", "name", "parent", "email",  "description", "location", "phone_number", "website_url"]
 
 
+
+
 class LoanAccountSerializer(BaseModelSerializerMixin):
     account_number = serializers.CharField(read_only=True)
     class Meta:
@@ -93,6 +95,8 @@ class LoanAccountSerializer(BaseModelSerializerMixin):
             "status",
             "loan_nature",
             "is_closed",
+            "utilization_percent",
+            "installment_due_type",
             "installment_amount",
             "utilization_percent",
             "maturity_date"
@@ -171,6 +175,7 @@ class CreateLoanApplicationSerializer(BaseModelSerializerMixin):
 
         serializers = {
             "finance": FinanceSerializer
+            
         }
 
     def create(self, validated_data):
