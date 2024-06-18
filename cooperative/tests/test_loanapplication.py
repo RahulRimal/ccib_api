@@ -11,6 +11,7 @@ class TestCreateLoanApplication(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.loanapplication = baker.make("cooperative.LoanApplication")
         cls.finance = baker.make("cooperative.Finance")
 
@@ -20,6 +21,7 @@ class TestCreateLoanApplication(APITestCase):
             "/cooperative/loanapplications/",
             {
                 "finance": self.finance.idx,
+                "user": self.user.idx,
                 "loan_amount": 10000,
                 "first_name": "John",
                 "middle_name": "A",

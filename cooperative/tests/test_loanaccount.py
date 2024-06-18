@@ -10,7 +10,7 @@ class TestCreateLoanAccount(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_create_loan_account(self):
@@ -194,7 +194,7 @@ class TestUpdateLoanAccount(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
 
@@ -256,7 +256,7 @@ class  TestDeleteLoanAccount(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
 
@@ -283,7 +283,7 @@ class TestListLoanAccount(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
 
@@ -301,7 +301,7 @@ class TestDetailLoanAccount(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
 
@@ -320,7 +320,7 @@ class TestOverDueLoans(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.installment = baker.make("cooperative.Installment")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
@@ -349,7 +349,7 @@ class TestListOverdueLoans(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
 
@@ -376,7 +376,7 @@ class TestLoanStatusOverview(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
         cls.loan = baker.make("cooperative.LoanAccount", user=cls.user, finance=cls.finance)
 

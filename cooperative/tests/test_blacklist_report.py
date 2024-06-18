@@ -11,17 +11,16 @@ class TestCreateBlacklistReport(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.blacklist = baker.make("cooperative.BlacklistReport")
-        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
+        cls.user = baker.make("cooperative.FinanceUser")
 
     def test_create_blacklist_report(self):
         client = APIClient()
         response = client.post(
             "/cooperative/blacklistreports/",
             {
-                "user": self.user.idx,
                 "finance": self.finance.idx,
+                "user": self.user.idx,
                 "status": "progress",
             },
         )
@@ -43,7 +42,6 @@ class TestCreateBlacklistReport(APITestCase):
         response = client.post(
             "/cooperative/blacklistreports/",
             {
-                "user": self.user.idx,
                 "status": "progress",
             },
         )
@@ -104,9 +102,11 @@ class TestDeleteBlacklistReport(APITestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.blacklist = baker.make("cooperative.BlacklistReport")
+        cls.user = baker.make("autho.User")
 
     def test_delete_blacklist_report(self):
         client = APIClient()
+        client.force_authenticate(user=self.user)
         response = client.delete(
             f"/cooperative/blacklistreports/{self.blacklist.idx}/",
         )

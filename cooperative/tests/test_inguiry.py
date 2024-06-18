@@ -10,8 +10,8 @@ class TestCreateInguiry(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
-        cls.inquirer = baker.make("autho.StaffUser")
+        cls.user = baker.make("cooperative.FinanceUser")
+        cls.inquirer = baker.make("cooperative.FinanceStaff")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_create_inguiry(self):

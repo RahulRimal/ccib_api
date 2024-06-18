@@ -12,7 +12,7 @@ class TestCreateBlacklist(APITestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.blacklist = baker.make("cooperative.Blacklist")
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_create_blacklist(self):
@@ -75,7 +75,6 @@ class TestUpdateBlacklist(APITestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.blacklist = baker.make("cooperative.Blacklist")
-        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_update_blacklist(self):
@@ -100,7 +99,6 @@ class TestListBlacklist(APITestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.blacklist = baker.make("cooperative.Blacklist")
-        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_list_blacklist(self):
@@ -116,7 +114,6 @@ class TestDetailBlacklist(APITestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.blacklist = baker.make("cooperative.Blacklist")
-        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_detail_blacklist(self):
@@ -133,7 +130,6 @@ class TestDeleteBlacklist(APITestCase):
     def setUpTestData(cls):
         super().setUpTestData()
         cls.blacklist = baker.make("cooperative.Blacklist")
-        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_delete_blacklist(self):

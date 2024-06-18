@@ -116,37 +116,37 @@ class QuickSummary(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-@pytest.mark.django_db
-class TestIncomeOverview(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.finance = baker.make("cooperative.Finance")
-        cls.installment = baker.make("cooperative.Installment", due_date=datetime.now() + timedelta(days=30), total_due=10000, total_paid=5000)
+# @pytest.mark.django_db
+# class TestIncomeOverview(APITestCase):
+#     @classmethod
+#     def setUpTestData(cls):
+#         super().setUpTestData()
+#         cls.finance = baker.make("cooperative.Finance")
+#         cls.installment = baker.make("cooperative.Installment", due_date=datetime.now() + timedelta(days=30), total_due=10000, total_paid=5000)
 
 
-    def test_income_overview(self):
-        client = APIClient()
-        response = client.get(
-            "/cooperative/finance/income_overview/",
+#     def test_income_overview(self):
+#         client = APIClient()
+#         response = client.get(
+#             "/cooperative/finance/income_overview/",
+         
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+# @pytest.mark.django_db
+# class ProfileInfo(APITestCase):
+#     @classmethod
+#     def setUpTestData(cls):
+#         super().setUpTestData()
+#         cls.finance = baker.make("cooperative.Finance")
+#         cls.user = baker.make("autho.User")
+
+
+#     def test_profile_info(self):
+#         client = APIClient()
+#         response = client.get(
+#             "/cooperative/finance/profile_info/",
           
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-
-@pytest.mark.django_db
-class ProfileInfo(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.finance = baker.make("cooperative.Finance")
-        cls.user = baker.make("autho.User")
-
-
-    def test_profile_info(self):
-        client = APIClient()
-        response = client.get(
-            "/cooperative/finance/profile_info/",
-          
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+#         )
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)

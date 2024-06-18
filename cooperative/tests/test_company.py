@@ -10,7 +10,7 @@ class TestCreateCompany(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
+        cls.user = baker.make("cooperative.FinanceUser")
 
     def test_create_company(self):
         client = APIClient()
@@ -34,7 +34,6 @@ class TestUpdateCompany(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
         cls.company = baker.make("cooperative.Company")
 
     def test_update_company(self):
@@ -59,7 +58,6 @@ class TestDeleteCompany(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
         cls.company = baker.make("cooperative.Company")
 
     def test_delete_company(self):
@@ -74,7 +72,6 @@ class TestListCompany(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
         cls.company = baker.make("cooperative.Company")
 
     def test_list_company(self):
@@ -89,7 +86,6 @@ class TestDetailCompany(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.User")
         cls.company = baker.make("cooperative.Company")
 
     def test_detail_company(self):

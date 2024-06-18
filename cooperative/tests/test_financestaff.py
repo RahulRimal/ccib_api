@@ -11,7 +11,7 @@ class TestCreateFinanceStaff(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.StaffUser")
+        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_create_finance_staff(self):
@@ -65,7 +65,7 @@ class TestListFinanceStaff(APITestCase):
     @classmethod
     def setUpTestData(cls):
         super().setUpTestData()
-        cls.user = baker.make("autho.StaffUser")
+        cls.user = baker.make("autho.User")
         cls.finance = baker.make("cooperative.Finance")
 
     def test_list_finance_staff(self):
