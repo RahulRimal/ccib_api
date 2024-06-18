@@ -4,6 +4,7 @@ from rest_framework_nested.routers import DefaultRouter, NestedDefaultRouter
 
 router = DefaultRouter()
 
+router.register('financeusers', views.FinanceUserViewSet, basename='financeusers')
 router.register('loans', views.LoanAccountViewSet, basename='loans')
 router.register('companys', views.CompanyViewSet, basename='companys')
 router.register('loanapplications', views.LoanApplicationViewSet, basename='loanapplications')
