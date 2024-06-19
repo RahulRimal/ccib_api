@@ -85,3 +85,5 @@ class User(BaseModelMixin, AbstractUser):
                 return grace_subscription and grace_subscription.is_grace_remaining
 
             return False
+
+        return False

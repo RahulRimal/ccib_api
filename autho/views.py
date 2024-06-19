@@ -34,21 +34,24 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
     @action(detail=True, methods=["POST"])
     def change_password(self, request: HttpRequest, *args, **kwargs) -> Response:
 
-        if not request.user.is_authenticated:
+        user = request.user
+
+        if not user.is_authenticated:
             return api_response_error(
                 {"detail": "User is not authenticated."},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        user: User = self.get_object()
 
-        requesting_user: User = request.user
-
-        if requesting_user != user:
-            return api_response_error(
-                {"detail": "You are not authorized to perform this action."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # Uncomment this dcode if you want to allow password change for other users as well
+        
+        # requesting_user: User = request.user
+        # user = self.get_object()
+        # if requesting_user != user:
+        #     return api_response_error(
+        #         {"detail": "You are not authorized to perform this action."},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
 
