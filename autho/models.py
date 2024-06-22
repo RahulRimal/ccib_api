@@ -22,8 +22,10 @@ from common.models import BaseModelMixin
 
 class User(BaseModelMixin, AbstractUser):
 
+    phone = models.CharField(max_length=10, null=True, blank=True)
+
     @cached_property
-    def is_finance_user(self) -> bool:
+    def is_finance_staff(self) -> bool:
         from cooperative.models import FinanceStaff
         return FinanceStaff.objects.filter(user=self).exists()
 

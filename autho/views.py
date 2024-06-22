@@ -24,6 +24,7 @@ from cooperative.serializers import FinanceSerializer
 class UserViewSet(BaseApiMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    filterset_fields = ["first_name", "last_name" ]
 
     @action(detail=False, methods=["GET", "PATCH"])
     def me(self, request):
@@ -72,7 +73,8 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
 
 
 class TokenObtainPairView(TokenObtainPairView):
-    permission_classes = [CCIBPermission]
+    pass
+    # permission_classes = [CCIBPermission]
 
 
 class TokenRefreshView(TokenRefreshView):

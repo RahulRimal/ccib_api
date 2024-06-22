@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from cooperative.models import Blacklist, BlacklistReport, Company, Finance, FinanceStaff, Inquiry, Installment, LoanAccount, LoanApplication, PersonalGuarantor, SecurityDeposit
+from cooperative.models import Blacklist, BlacklistReport, Company, Finance, FinanceStaff, FinanceUser, Inquiry, Installment, LoanAccount, LoanApplication, PersonalGuarantor, SecurityDeposit
 
 
 # class PersonalGuarantorInLineAdmin(admin.TabularInline):
@@ -67,6 +67,16 @@ class FinanceStaffAdmin(admin.ModelAdmin):
         "user",
         "finance",
     ]
+
+@admin.register(FinanceUser)
+class FinanceStaffAdmin(admin.ModelAdmin):
+    list_display = [
+        "idx",
+        "first_name",
+        "last_name"
+    ]
+
+
 
 
 @admin.register(Installment)
