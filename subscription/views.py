@@ -13,6 +13,7 @@ from subscription.serializers import (
 class PlanViewSet(BaseApiMixin, ModelViewSet):
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
+    throttle_scope = "plan_api_throttle"
 
 
 # class PlanCostViewSet(BaseApiMixin, ModelViewSet):
@@ -23,3 +24,4 @@ class PlanViewSet(BaseApiMixin, ModelViewSet):
 class SubscriptionViewSet(BaseApiMixin, ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
+    throttle_scope = "subscription_api_throttle"
