@@ -1,4 +1,5 @@
 import datetime
+import logging
 from rest_framework import serializers
 
 from cooperative.serializers import FinanceSerializer
@@ -7,6 +8,7 @@ from cooperative.models import Finance
 from subscription.models import Plan, Subscription
 
 
+logger = logging.getLogger(__name__)
 # class PlanCostSerializer(BaseModelSerializerMixin):
 #     class Meta:
 #         model = PlanCost
@@ -50,11 +52,13 @@ class SubscriptionSerializer(BaseModelSerializerMixin):
         try:
             finance = Finance.objects.get(idx=validated_data.pop("finance_idx"))
         except Finance.DoesNotExist:
+            logger.warning("Finance does not exist: %s", validated_data["finance_idx"])
             raise serializers.ValidationError("Finance does not exist")
         validated_data["finance"] = finance
         try:
             plan = Plan.objects.get(idx=validated_data.pop("plan_idx"))
         except Plan.DoesNotExist:
+            logger.warning("Plan does not exist: %s", validated_data["plan_idx"])
             raise serializers.ValidationError("Plan does not exist")
         validated_data["plan"] = plan
         validated_data["recurrance_period"] = Subscription.get_recurrance_period(plan.period, validated_data["billing_start"])

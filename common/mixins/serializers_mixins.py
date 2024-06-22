@@ -1,3 +1,5 @@
+import logging
+
 from shortuuidfield import ShortUUIDField
 from typing import Any, Dict
 
@@ -5,6 +7,9 @@ from rest_framework import serializers
 from rest_framework.fields import get_attribute, is_simple_callable
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
+
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -37,7 +42,11 @@ class IdxRelatedField(serializers.PrimaryKeyRelatedField):
                     value = getattr(instance, self.source_attrs[-1]).idx
                 return IDXOnlyObject(idx=value)
             except AttributeError:
-                pass
+                logger.warning(
+                    'Could not resolve object %s: %s', instance, self.source_attrs
+                )
+
+                
 
     def to_representation(self, obj):
         return obj.idx
@@ -48,6 +57,7 @@ class IdxRelatedField(serializers.PrimaryKeyRelatedField):
         except ObjectDoesNotExist:
             self.fail('does_not_exist', pk_value=data)
         except (TypeError, ValueError):
+            logger.warning('Incorrect type. Expected pk value, received %s', type(data).__name__)
             self.fail('incorrect_type', data_type=type(data).__name__)
 
 
@@ -130,6 +140,7 @@ class DetailRelatedField(serializers.RelatedField):
                 self.no_source = True
                 kwargs["source"] = self.representation_attribute
         except KeyError:
+            logger.warning("Please provide the representation attribute")
             raise Exception("Please provide the representation attribute")
         super().__init__(**kwargs)
 
@@ -149,6 +160,7 @@ class DetailRelatedField(serializers.RelatedField):
             try:
                 return get_attribute(obj, self.representation_attribute)()
             except AttributeError:
+                logger.warning("Method not found: %s", self.representation_attribute)
                 return getattr(obj, self.representation_attribute)()
         return getattr(obj, self.representation_attribute)
 
@@ -169,4 +181,5 @@ class DetailRelatedField(serializers.RelatedField):
         try:
             return self.queryset.get(**{self.lookup: data})
         except ObjectDoesNotExist:
+            logger.warning("Object does not exist: %s", data)
             raise serializers.ValidationError("Object does not exist")
