@@ -62,6 +62,7 @@ class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
     ]
 
     def get_queryset(self):
+        return FinanceUser.objects.all()
         user = self.request.user
         if user.is_superuser or user.is_staff:
             return FinanceUser.objects.all()
@@ -328,9 +329,11 @@ class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
     @action(detail=False, methods = ['GET', 'PATCH'])
     def me(self, request):
         user = request.user
-        serializer = self.get_serializer(user)
-        return Response()
+        if not user.is_finance_staff:
+            return api_response_error("You can't access this endpoint", status=403)
+        serializer = self.get_serializer(user.finance_staff)
 
+        return api_response_success(serializer.data)
 
 class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]

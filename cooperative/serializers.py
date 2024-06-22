@@ -282,15 +282,23 @@ class BlacklistReportSerializer(BaseModelSerializerMixin):
 
 
 class FinanceStaffSerializer(BaseModelSerializerMixin):
+    username = serializers.CharField(source="user.username")
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+    email = serializers.CharField(source="user.email")
+    phone = serializers.CharField(source="user.phone")
     class Meta:
         model = FinanceStaff
         fields = [
             "idx",
-            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
             "finance",
         ]
         serializers = {
-            "user": UserSerializer,
             "finance": FinanceSerializer
         }
 
