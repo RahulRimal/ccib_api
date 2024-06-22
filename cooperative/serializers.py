@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import serializers
 
 from autho.models import User
@@ -19,6 +21,7 @@ from cooperative.models import (
     SecurityDeposit,
 )
 
+logger = logging.getLogger(__name__)
 
 
 class FinanceUserSerializer(BaseModelSerializerMixin):
@@ -62,6 +65,7 @@ class PersonalGuarantorSerializer(BaseModelSerializerMixin):
         try:
             loan = LoanAccount.objects.get(idx=loan_idx)
         except LoanAccount.DoesNotExist:
+            logger.warning("Loan does not exist: %s", loan_idx)
             raise serializers.ValidationError("Loan does not exist")
         validated_data["loan"] = loan
         return super().create(validated_data)

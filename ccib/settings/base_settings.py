@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
+import logging.config
+import os
+
+logger = logging.getLogger(__name__)
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -162,7 +167,54 @@ AUTH_USER_MODEL = "autho.User"
 
 CORS_ALLOW_ALL_ORIGINS: bool = True
 
+
+# ========================================================================================#
+LOG_FILE_PATH = os.path.expanduser("~") + "/ccic.log"
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"},
+    },
+    "handlers": {
+        "default": {
+            "level": "INFO",
+            "formatter": "standard",
+            "class": "logging.FileHandler",
+            "filename": LOG_FILE_PATH,
+        },
+        "adminhandler": {  # NOTE: THIS IS NOT USED
+            "level": "WARN",
+            "formatter": "standard",
+            "class": "logging.handlers.SMTPHandler",
+            "mailhost": "",  # NOTE: add value here
+            "fromaddr": "admin@baatomechanic.com",
+            "toaddrs": ["krishna@baatomechanic.com"],
+            "subject": "Warning/Error Log",
+        },
+    },
+    "loggers": {
+        "": {"handlers": ["default"], "level": "INFO", "propagate": False},
+        "django.request": {
+            "handlers": ["default"],
+            "level": "WARN",
+            "propagate": False,
+        },
+        "adminlogger": {  # NOTE: THIS IS NOT USED
+            "handlers": ["adminhandler"],
+            "level": "WARN",
+            "propagate": False,
+        },
+    },
+}
+
+
+logging.config.dictConfig(LOGGING)
+
+
 try:
     from ccib.settings.local_settings import *  # noqa
 except ImportError:
-    pass
+    logging.error("Local settings file not found.")

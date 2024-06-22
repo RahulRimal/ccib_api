@@ -1,3 +1,5 @@
+import logging
+
 from collections import defaultdict
 from datetime import timedelta, datetime
 from django.utils import timezone
@@ -47,6 +49,9 @@ from cooperative.serializers import (
     SecurityDepositSerializer,
     UpdateLoanApplicationSerializer,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
@@ -103,6 +108,7 @@ class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
     def user_loan_type(self, request):
         user_idx = request.query_params.get("user")
         if not user_idx:
+            logger.warning("User ID is required")
             return api_response_error("User ID is required", status=400)
 
         type_counts = (
@@ -342,10 +348,12 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     def credit_profile_summary(self, request):
         user_idx = request.query_params.get("user")
         if not user_idx:
+            logger.warning("User ID is required")
             return api_response_error("User ID is required", status=400)
 
         user = User.objects.filter(idx=user_idx).first()
         if not user:
+            logger.warning("User not found")
             return api_response_error("User not found", status=404)
 
         # Assuming Installment has a foreign key to Loan and Loan has a foreign key to User
@@ -366,10 +374,12 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     def user_credit_profile_overview(self, request):
         user_idx = request.query_params.get("user")
         if not user_idx:
+            logger.warning("User ID is required")
             return api_response_error("User ID is required", status=400)
 
         user = User.objects.filter(idx=user_idx).first()
         if not user:
+            logger.warning("User not found")
             return api_response_error("User not found", status=404)
 
         installment_stats = (
