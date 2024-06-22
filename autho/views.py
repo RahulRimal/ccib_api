@@ -24,6 +24,8 @@ from cooperative.serializers import FinanceSerializer
 class UserViewSet(BaseApiMixin, ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    throttle_scope = "user_api_throttle"
+
 
     @action(detail=False, methods=["GET", "PATCH"])
     def me(self, request):
@@ -73,13 +75,18 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
 
 class TokenObtainPairView(TokenObtainPairView):
     permission_classes = [CCIBPermission]
+    throttle_scope = 'token_throttle'
 
 
 class TokenRefreshView(TokenRefreshView):
     # permission_classes = ([BazraPermission])
-    pass
+    throttle_scope = 'token_throttle'
+
+    
 
 
 class TokenVerifyView(TokenVerifyView):
     # permission_classes = ([BazraPermission])
-    pass
+    throttle_scope = 'token_throttle'
+
+    

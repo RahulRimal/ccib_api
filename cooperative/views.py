@@ -51,6 +51,7 @@ from cooperative.serializers import (
 
 class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
     serializer_class = FinanceUserSerializer
+    throttle_scope = "finance_api_throttle"
     # queryset = User.objects.all()
     # permission_classes = [CCIBPermission]
     filterset_fields = [
@@ -142,6 +143,7 @@ class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = PersonalGuarantor.objects.all()
     serializer_class = PersonalGuarantorSerializer
+    throttle_scope = "personal_guarantor_api_throttle"
 
     def get_queryset(self):
         return PersonalGuarantor.objects.filter(loan__idx=self.kwargs["loan_idx"])
@@ -155,6 +157,8 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
     queryset = LoanAccount.objects.all()
     serializer_class = LoanAccountSerializer
     filterset_fields = ["status", "user", "account_number", "loan_nature"]
+    throttle_scope = "loanaccount_api_throttle"
+    
 
     @action(detail=False, methods=["GET"])
     def loan_status_overview(self, request):
@@ -221,6 +225,7 @@ class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanApplication.objects.all()
     filterset_fields = ["status", "user", "finance"]
+    throttle_scope = "loanapplication_api_throttle"
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -244,12 +249,14 @@ class CompanyViewSet(BaseApiMixin, ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     filterset_fields = ["name", "pan_num", "vat_num"]
+    throttle_scope = "company_api_throttle"
 
 
 class FinanceViewSet(BaseApiMixin, ModelViewSet):
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     filterset_fields = ["name"]
+    throttle_scope = "finance_api_throttle"
 
     @action(detail=False, methods=["GET"])
     def quick_summary(self, request):
@@ -324,6 +331,7 @@ class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
     queryset = FinanceStaff.objects.all()
     serializer_class = FinanceStaffSerializer
     filterset_fields = ["finance"]
+    throttle_scope = "financestaff_api_throttle"
 
     @action(detail=False, methods = ['GET', 'PATCH'])
     def me(self, request):
@@ -337,6 +345,7 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
     queryset = Installment.objects.all()
     serializer_class = InstallmentSerializer
     filterset_fields = ["loan", "due_date", "total_outstanding"]
+    throttle_scope = "installment_api_throttle"
 
     @action(detail=False, methods=["GET"])
     def credit_profile_summary(self, request):
@@ -403,6 +412,7 @@ class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
     queryset = SecurityDeposit.objects.all()
     serializer_class = SecurityDepositSerializer
     filterset_fields = ["loan", "type", "ownership_type"]
+    throttle_scope = "securitydeposit_api_throttle"
 
 
 class BlacklistViewSet(BaseApiMixin, ModelViewSet):
@@ -410,12 +420,14 @@ class BlacklistViewSet(BaseApiMixin, ModelViewSet):
     queryset = Blacklist.objects.all()
     filterset_fields = ["user__idx"]
     serializer_class = BlacklistSerializer
+    throttle_scope = "blacklist_api_throttle"
 
 
 class BlacklistReportViewSet(BaseApiMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = BlacklistReport.objects.all()
     serializer_class = BlacklistReportSerializer
+    throttle_scope = "blacklistreport_api_throttle"
 
 
 class InquiryViewSet(BaseApiMixin, ModelViewSet):
@@ -423,6 +435,7 @@ class InquiryViewSet(BaseApiMixin, ModelViewSet):
     queryset = Inquiry.objects.all()
     filterset_fields = ["user"]
     serializer_class = InquirySerializer
+    throttle_scope = "inquiry_api_throttle"
 
 
 class ReportView(BaseApiMixin, APIView):

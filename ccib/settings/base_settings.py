@@ -147,8 +147,33 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_FILTER_BACKENDS": ["common.filterbackend.IdxFilterBackend"],
+
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'token_throttle': '1/minute',
+        'user_api_throttle': '1/minute',
+        'financeuser_api_throttle': '1/minute',
+        'finance_api_throttle': '1/minute',
+        'financestaff_api_throttle': '1/minute',
+        'personal_guarantor_api_throttle': '1/minute',
+        'loanaccount_api_throttle': '1/minute',
+        'loanapplication_api_throttle': '1/minute',
+        'installment_api_throttle': '1/minute',
+        'blacklist_api_throttle': '1/minute',
+        'blacklistreport_api_throttle': '1/minute',
+        'inquiry_api_throttle': '1/minute',
+        'company_api_throttle': '1/minute',
+        'securitydeposit_api_throttle': '1/minute',
+        'subscription_api_throttle': '1/minute',
+        'plan_api_throttle': '1/minute',
+        
+
+
+    }
     
-}
+}   
 
 
 SIMPLE_JWT = {
