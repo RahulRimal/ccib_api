@@ -22,18 +22,29 @@ from cooperative.serializers import FinanceSerializer
 
 
 class UserViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get and update User profile details.
+    """
+    
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filterset_fields = ["first_name", "last_name" ]
 
     @action(detail=False, methods=["GET", "PATCH"])
     def me(self, request):
+        """ 
+        Get and update User profile details
+        """  
         user = request.user
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
     @action(detail=True, methods=["POST"])
     def change_password(self, request: HttpRequest, *args, **kwargs) -> Response:
+        """
+        User can change their password
+
+        """
 
         if not request.user.is_authenticated:
             return api_response_error(
@@ -73,15 +84,24 @@ class UserViewSet(BaseApiMixin, ModelViewSet):
 
 
 class TokenObtainPairView(TokenObtainPairView):
+    """
+    This view is used to login the user which will respond with an access and a refresh tokens for user.
+    """
     pass
     # permission_classes = [CCIBPermission]
 
 
 class TokenRefreshView(TokenRefreshView):
+    """
+    This view is used to  refresh the access token.
+    """
     # permission_classes = ([BazraPermission])
     pass
 
 
 class TokenVerifyView(TokenVerifyView):
+    """
+    This view is used to verify the access token.
+    """
     # permission_classes = ([BazraPermission])
     pass

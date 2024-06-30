@@ -11,6 +11,7 @@ from subscription.serializers import (
 
 
 class PlanViewSet(BaseApiMixin, ModelViewSet):
+    """Get , update , create and delete plan details"""
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
 
@@ -21,5 +22,6 @@ class PlanViewSet(BaseApiMixin, ModelViewSet):
 
 
 class SubscriptionViewSet(BaseApiMixin, ModelViewSet):
+    """Get , update , create and delete subscription details by the Finance idx and the Plan idx"""
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer

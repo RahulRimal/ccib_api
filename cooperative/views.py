@@ -50,6 +50,9 @@ from cooperative.serializers import (
 
 
 class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get, create, delete and update the Finance user details
+    """
     serializer_class = FinanceUserSerializer
     # queryset = User.objects.all()
     # permission_classes = [CCIBPermission]
@@ -74,7 +77,9 @@ class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def user_account_summary(self, request):
-
+        """
+        Get user account summary 
+        """
         user_loan_accounts = LoanAccount.objects.all()
 
         loan_accounts_list = []
@@ -102,6 +107,9 @@ class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def user_loan_type(self, request):
+        """
+        Get user loan type
+        """
         user_idx = request.query_params.get("user")
         if not user_idx:
             return api_response_error("User ID is required", status=400)
@@ -121,6 +129,9 @@ class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def user_account(self, request):
+        """
+        Get user account by user details
+        """
         user_loan_accounts = LoanAccount.objects.all()  # Adjust the query as needed
 
         user_account_list = [
@@ -140,6 +151,9 @@ class FinanceUserViewSet(BaseApiMixin, ModelViewSet):
 
 
 class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get and update personal guarantor details by the loan account idx and FinanceUser idx.
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = PersonalGuarantor.objects.all()
     serializer_class = PersonalGuarantorSerializer
@@ -152,6 +166,9 @@ class PersonalGuarantorViewSet(BaseApiMixin, ModelViewSet):
 
 
 class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get , update , create and delete loan account details
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanAccount.objects.all()
     serializer_class = LoanAccountSerializer
@@ -159,6 +176,9 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def loan_status_overview(self, request):
+        """
+        Get loan status overview by user status
+        """
         status_counts = LoanAccount.objects.values("status").annotate(
             count=Count("status")
         )
@@ -172,6 +192,9 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def overdue_loans(self, request):
+        """
+        Get overdue loans
+        """
         finance_idx = request.query_params.get("finance")
 
         # Get the current date
@@ -219,6 +242,9 @@ class LoanAccountViewSet(BaseApiMixin, ModelViewSet):
 
 
 class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get , update , create and delete loan application details
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = LoanApplication.objects.all()
     filterset_fields = ["status", "user", "finance"]
@@ -232,6 +258,9 @@ class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def loan_application_history(self, request):
+        """
+        Get loan application history
+        """
         application = LoanApplication.objects.filter(
             user__idx=self.kwargs.get("user_idx")
         )
@@ -241,6 +270,9 @@ class LoanApplicationViewSet(BaseApiMixin, ModelViewSet):
 
 
 class CompanyViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get , update , create and delete company details
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
@@ -248,12 +280,21 @@ class CompanyViewSet(BaseApiMixin, ModelViewSet):
 
 
 class FinanceViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get the finance details
+    Create a finance 
+    Update a finance
+    Delete a finance
+    """
     queryset = Finance.objects.all()
     serializer_class = FinanceSerializer
     filterset_fields = ["name"]
 
     @action(detail=False, methods=["GET"])
     def quick_summary(self, request):
+        """
+        Get quick summary by user which are involved in those finances
+        """
         finance = Finance.objects.filter(
             idx=request.query_params.get("finance_idx")
         ).first()
@@ -295,6 +336,9 @@ class FinanceViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=True, methods=["GET"])
     def income_overview(self, request, *args, **kwargs):
+        """
+        Get monthly income overview 
+        """
         one_year_ago = datetime.now().date() - timedelta(days=365)
         installments = Installment.objects.filter(due_date__lte=one_year_ago)
 
@@ -321,6 +365,13 @@ class FinanceViewSet(BaseApiMixin, ModelViewSet):
 
 
 class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get the finance staff details
+    Create the finance staff and also take the User idx and the Finance idx
+    Update the finance staff and also take the FinanceStaff idx
+    Delete the finance staff and also take the FinanceStaff idx
+
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = FinanceStaff.objects.all()
     serializer_class = FinanceStaffSerializer
@@ -328,6 +379,9 @@ class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods = ['GET', 'PATCH'])
     def me(self, request):
+        """
+        Get me the finance staff details
+        """
         user = request.user
         if not user.is_finance_staff:
             return api_response_error("You can't access this endpoint", status=403)
@@ -336,6 +390,12 @@ class FinanceStaffViewSet(BaseApiMixin, ModelViewSet):
         return api_response_success(serializer.data)
 
 class InstallmentViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get the installment details.
+    Create the installment and also take the LoanAccount idx.
+    Update the installment and also take the Installment idx.
+    Delete the installment and also take the Installment idx.
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Installment.objects.all()
     serializer_class = InstallmentSerializer
@@ -343,6 +403,9 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def credit_profile_summary(self, request):
+        """
+        Get credit profile summary
+        """
         user_idx = request.query_params.get("user")
         if not user_idx:
             return api_response_error("User ID is required", status=400)
@@ -367,6 +430,9 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def user_credit_profile_overview(self, request):
+        """
+        Get user credit profile overview
+        """
         user_idx = request.query_params.get("user")
         if not user_idx:
             return api_response_error("User ID is required", status=400)
@@ -402,6 +468,12 @@ class InstallmentViewSet(BaseApiMixin, ModelViewSet):
 
 
 class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get the Security Deposit details.
+    Create a Security Deposit and also take the LoanAccount idx.
+    Update a Security Deposit and also take the SecurityDeposit idx.
+    Delete a Security Deposit and also take the SecurityDeposit idx.
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = SecurityDeposit.objects.all()
     serializer_class = SecurityDepositSerializer
@@ -409,6 +481,12 @@ class SecurityDepositViewSet(BaseApiMixin, ModelViewSet):
 
 
 class BlacklistViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get the Blacklist details.
+    Create a Blacklist and also take the FinanceUser idx and Finance idx.
+    Update a Blacklist and also take the Blacklist idx.
+    Delete a Blacklist and also take the Blacklist idx.
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Blacklist.objects.all()
     filterset_fields = ["user__idx"]
@@ -416,12 +494,24 @@ class BlacklistViewSet(BaseApiMixin, ModelViewSet):
 
 
 class BlacklistReportViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get The Blacklist Report.
+    Create a Blacklist Report and also take the FinanceUser idx and Finance idx.
+    Update a Blacklist Report and also take the BlacklistReport idx.
+    Delete a Blacklist Report and also take the BlacklistReport idx.
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = BlacklistReport.objects.all()
     serializer_class = BlacklistReportSerializer
 
 
 class InquiryViewSet(BaseApiMixin, ModelViewSet):
+    """
+    Get the inquiry details.
+    Create a inquiry and also take the Financeuser idx and Finance idx.
+    Update a inquiry and also take the inquiry idx.
+    Delete a inquiry and also take the inquiry idx.
+    """
     http_method_names = ["get", "post", "patch", "delete"]
     queryset = Inquiry.objects.all()
     filterset_fields = ["user"]
@@ -429,6 +519,7 @@ class InquiryViewSet(BaseApiMixin, ModelViewSet):
 
 
 class ReportView(BaseApiMixin, APIView):
+
 
     # @action(detail=False, methods = ['GET'])
     # def summary(self, request):
